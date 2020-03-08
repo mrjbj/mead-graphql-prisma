@@ -1,17 +1,31 @@
 {
-  "extends": ["eslint:recommended"],
+  "ignorePatterns": ["node_modules/", "dist", "coverage"],
   "env": {
     "browser": true,
+    "es6": true,
     "node": true
   },
-  "ignorePatterns": ["**/node_modules"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "prettier/@typescript-eslint"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "array-bracket-spacing": "warn",
     "arrow-parens": "off",
     "arrow-spacing": "warn",
     "block-scoped-var": "error",
     "block-spacing": "warn",
-    "capitalized-comments": "warn",
     "camelcase": "warn",
     "comma-dangle": "warn",
     "comma-spacing": "warn",
@@ -20,9 +34,10 @@
     "default-case": "warn",
     "eol-last": "warn",
     "func-call-spacing": "warn",
-    "indent": "warn",
+    "indent": ["error", 2],
     "key-spacing": "warn",
     "keyword-spacing": "warn",
+    "linebreak-style": ["error", "unix"],
     "multiline-comment-style": "warn",
     "new-cap": "warn",
     "new-parens": "warn",
@@ -33,6 +48,9 @@
     "no-duplicate-imports": "warn",
     "no-extra-semi": "warn",
     "no-irregular-whitespace": "warn",
-    "no-magic-numbers": "warn"
+    "no-magic-numbers": "error",
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "require-await": "error",
+    "semi": ["error", "never"]
   }
 }
