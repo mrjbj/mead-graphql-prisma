@@ -43,16 +43,34 @@ const prisma = new Prisma({
  *   console.log(JSON.stringify(posts, null, 2))
  * }
  */
-const TAB_SPACES = 2
-const wrapper = async () => {
-  const jason = await prisma.mutation.createComment({
-    data: {
-      text: `I'll say it again... "Now that's a God worthy of worship!"`,
-      post: { connect: { id: 'ck7idj39n074o0824o1d3k3b1' } },
-      author: { connect: { id: 'ck7hw1chn02zw0824ms8bym8k' } }
-    }
-  }, '{id text }')
-  console.log(JSON.stringify(jason, null, TAB_SPACES))
-}
+/*
+ * const TAB_SPACES = 2
+ * const wrapper = async () => {
+ *   const jason = await prisma.mutation.createComment({
+ *     data: {
+ *       text: `I'll say it again... "Now that's a God worthy of worship!"`,
+ *       post: { connect: { id: 'ck7idj39n074o0824o1d3k3b1' } },
+ *       author: { connect: { id: 'ck7hw1chn02zw0824ms8bym8k' } }
+ *     }
+ *   }, '{id text }')
+ *   console.log(JSON.stringify(jason, null, TAB_SPACES))
+ * }
+ */
 
-wrapper()
+// wrapper()
+
+
+// example of updating then querying in a promise-chain
+prisma.mutation.updatePost({
+  where: { id: 'ck7hx26it04320824icunm1s4' },
+  data: { title: 'Should we believe in God?', published: true }
+}, '{id}')
+  .then(() => {
+    return prisma.query.posts(undefined, '{id title body published}')
+  })
+  .then(data => {
+    console.log(JSON.stringify(data))
+  })
+  .catch(error => {
+    console.log(JSON.stringify(error))
+  })
