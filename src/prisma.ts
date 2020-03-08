@@ -85,12 +85,13 @@ const updatePostForUser = async (id: any, data: any) => {
 
     const user = await prisma.query.user({
       where: { id: updatedPost.author.id }
-    }, '{id name email}')
+    }, '{id name email posts {id title published}}')
     return user
   } catch (e) {
     console.log(`Error in updatePostForUser: ${JSON.stringify(e)}`)
   }
 }
-updatePostForUser({ id: 'ck7hx26it04320824icunm1s4' }, { title: `Yes, son. This is God talking...` }).then(post => {
-  console.log(JSON.stringify(post))
-}).catch(error => console.log(JSON.stringify(error)))
+updatePostForUser({ id: 'ck7hx26it04320824icunm1s4' }, { title: `Yes, son. This is God talking...` })
+  .then(post => {
+    console.log(JSON.stringify(post))
+  }).catch(error => console.log(JSON.stringify(error)))
