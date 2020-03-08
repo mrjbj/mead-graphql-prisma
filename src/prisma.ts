@@ -1,4 +1,5 @@
 import { Prisma } from 'prisma-binding'
+import { setVerror } from './util/applicationError'
 
 const prisma = new Prisma({
   typeDefs: './src/generated/prisma.graphql',
@@ -76,22 +77,21 @@ const prisma = new Prisma({
 //   })
 
 // where: { id: 'ck7hx26it04320824icunm1s4'},
-const updatePostForUser = async (id: any, data: any) => {
-  try {
-    const updatedPost = await prisma.mutation.updatePost({
-      where: id,
-      data: data
-    }, '{author {id}}')
-
-    const user = await prisma.query.user({
-      where: { id: updatedPost.author.id }
-    }, '{id name email posts {id title published}}')
-    return user
-  } catch (e) {
-    console.log(`Error in updatePostForUser: ${JSON.stringify(e)}`)
+const updatePostForUser = async (postId: any, data: any) => {
+  const postExists = await prisma.exists.Post(postId)
+  if (!postExists) {
+    const err1 = setVerror(undefined, "Cannot update -> postId not found in database.", "postId", postId.id)
+    const err2 = setVerror(err1, "Second level error.", "scobby", { custom: true })
+    throw err2
   }
+  const updatedPost = await prisma.mutation.updatePost({
+    where: postId,
+    data: data
+  }, '{author {id name email posts {id title published }}}')
+  return updatedPost.author
 }
-updatePostForUser({ id: 'ck7hx26it04320824icunm1s4' }, { title: `Yes, son. This is God talking...` })
+updatePostForUser({ id: '!!!ck7hx26it04320824icunm1s4' }, { title: `Yes, son. This is God talking...` })
   .then(post => {
     console.log(JSON.stringify(post))
-  }).catch(error => console.log(JSON.stringify(error)))
+  }).catch(error => console.log(error))
+
