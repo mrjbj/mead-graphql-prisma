@@ -61,16 +61,36 @@ const prisma = new Prisma({
 
 
 // example of updating then querying in a promise-chain
-prisma.mutation.updatePost({
-  where: { id: 'ck7hx26it04320824icunm1s4' },
-  data: { title: 'Should we believe in God?', published: true }
-}, '{id}')
-  .then(() => {
-    return prisma.query.posts(undefined, '{id title body published}')
-  })
-  .then(data => {
-    console.log(JSON.stringify(data))
-  })
-  .catch(error => {
-    console.log(JSON.stringify(error))
-  })
+// prisma.mutation.updatePost({
+//   where: { id: 'ck7hx26it04320824icunm1s4' },
+//   data: { title: 'Should we believe in God?', published: true }
+// }, '{id}')
+//   .then(() => {
+//     return prisma.query.posts(undefined, '{id title body published}')
+//   })
+//   .then(data => {
+//     console.log(JSON.stringify(data))
+//   })
+//   .catch(error => {
+//     console.log(JSON.stringify(error))
+//   })
+
+// where: { id: 'ck7hx26it04320824icunm1s4'},
+const updatePostForUser = async (id: any, data: any) => {
+  try {
+    const updatedPost = await prisma.mutation.updatePost({
+      where: id,
+      data: data
+    }, '{author {id}}')
+
+    const user = await prisma.query.user({
+      where: { id: updatedPost.author.id }
+    }, '{id name email}')
+    return user
+  } catch (e) {
+    console.log(`Error in updatePostForUser: ${JSON.stringify(e)}`)
+  }
+}
+updatePostForUser({ id: 'ck7hx26it04320824icunm1s4' }, { title: `Yes, son. This is God talking...` }).then(post => {
+  console.log(JSON.stringify(post))
+}).catch(error => console.log(JSON.stringify(error)))
