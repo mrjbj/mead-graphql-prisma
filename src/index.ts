@@ -1,24 +1,3 @@
-// Query is one of the three GrqphQL built-in types
-// Mutation and Subscriptions are the other two
-// Scaler types => String, Int, Boolean, Fload, ID
-import { GraphQLServer, PubSub } from 'graphql-yoga'
-import { db } from './db'
-import { watchSchemaFiles } from './util/watchSchemaFiles'
-import { setupGlobalErrorHandler } from './util/errorhander'
-import Query from './resolvers/Query'
-import Mutation from './resolvers/Mutation'
-import Subscription from './resolvers/Subscription'
-import User from './resolvers/User'
-import Post from './resolvers/Post'
-import Comment from './resolvers/Comment'
-
-if (process.env.NODE_ENV !== 'production') {
-  watchSchemaFiles() // ts-node-dev should look for changes to schema.graphql also
-}
-setupGlobalErrorHandler()
-
-const pubsub = new PubSub()
-
 // ---------------------------------------------------------------------------------------------------------
 // Configure GraphQL server object
 // ---------------------------------------------------------------------------------------------------------
@@ -40,6 +19,25 @@ const pubsub = new PubSub()
 // context: setting context to db object makes it available to every resolver method in the entire
 //          system via ctx parameter (e.g. resolvers.me(parent, args, ctx, info))                       (6)
 // ---------------------------------------------------------------------------------------------------------
+import { GraphQLServer, PubSub } from 'graphql-yoga'
+import { db } from './db'
+import { watchSchemaFiles } from './util/watchSchemaFiles'
+import { setupGlobalErrorHandler } from './util/errorhander'
+import Query from './resolvers/Query'
+import Mutation from './resolvers/Mutation'
+import Subscription from './resolvers/Subscription'
+import User from './resolvers/User'
+import Post from './resolvers/Post'
+import Comment from './resolvers/Comment'
+import './prisma' // just to get it to run
+
+if (process.env.NODE_ENV !== 'production') {
+  watchSchemaFiles() // ts-node-dev should look for changes to schema.graphql also
+}
+setupGlobalErrorHandler()
+
+const pubsub = new PubSub()
+
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',   // (1)
   resolvers: {

@@ -1,5 +1,4 @@
 import { Context } from '../types/types'
-import { PubSub } from 'graphql-yoga'
 
 // ------------
 // - Subscription is reserved type name   (e.g. type Subscription{<subscription items>})   // (0)
@@ -14,7 +13,7 @@ import { PubSub } from 'graphql-yoga'
 // - Notes (1) and (3) must match to the name defined in schema (0)
 const Subscription = {
   comment: {
-    subscribe(parent, args: { postId: string }, ctx: Context, info) {
+    subscribe(args: { postId: string }, ctx: Context) {
       // subscribe to comments associated with a particular post.
       //  1. make sure post exists
       //  2. setup channel to publish to that post
@@ -27,7 +26,7 @@ const Subscription = {
     }
   },
   post: {
-    subscribe(parent, args, ctx: Context, info) {
+    subscribe(ctx: Context) {
       return ctx.pubsub.asyncIterator(`Posts`)
     }
   }

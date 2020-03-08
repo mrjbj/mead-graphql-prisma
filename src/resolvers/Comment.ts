@@ -4,10 +4,10 @@
 import { Context, User, Post, Comment } from '../types/types'
 
 const Comment = {
-  author(parent: Comment, args, { db }: Context, info): User | undefined {
+  author(parent: Comment, { db }: Context): User | undefined {
     return db.users.find(item => item.id === parent.author)
   },
-  post(parent: Comment, args, { db }: Context, info): Post | undefined {
+  post(parent: Comment, { db }: Context): Post | undefined {
     // where posts.id === comment.post
     return db.posts.find(item => item.id === parent.post)
   }

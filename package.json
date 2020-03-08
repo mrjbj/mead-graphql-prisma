@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev --clear ./src/index.ts",
     "get-schema": "graphql get-schema -p prisma",
     "start": "ts-node ./src/index.ts"
@@ -13,9 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/chokidar": "^2.1.3",
     "@types/eslint": "^6.1.8",
     "@types/uuid": "^7.0.0",
-    "eslint": "^6.8.0",
+    "@typescript-eslint/parser": "^2.22.0",
+    "chokidar": "^3.3.1",
     "graphql-cli": "^3.0.14",
     "graphql-yoga": "^1.18.3",
     "prisma": "^1.34.10",
@@ -24,5 +25,10 @@
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.8.3",
     "uuid": "^7.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-standard": "^4.0.1"
   }
 }

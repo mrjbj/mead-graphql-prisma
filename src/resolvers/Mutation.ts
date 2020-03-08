@@ -1,10 +1,9 @@
 import { Context, User, Post, Comment } from '../types/types'
 import { NOT_FOUND } from '../util/constants'
 import { v4 as uuidv4 } from "uuid"
-import { PubSub } from 'graphql-yoga'
 
 const Mutation = {
-  createUser(parent, args: User, { db }: Context, info): User | Error {
+  createUser(args: User, { db }: Context): User | Error {
     const emailTaken = db.users.some(item => item.email === args.email)
     if (emailTaken) {
       throw new Error(`Email [${args.email}] already in use.`)
@@ -16,7 +15,7 @@ const Mutation = {
     db.users.push(user)
     return user
   },
-  updateUser(parent, args: { id: string, data: Partial<User> }, { db }: Context, info): User | Error {
+  updateUser(args: { id: string, data: Partial<User> }, { db }: Context): User | Error {
     // find id, if found
     // update email, if not duplicate
     // update name, no worry
@@ -43,7 +42,7 @@ const Mutation = {
     }
     return user
   },
-  deleteUser(parent, args: { id: string }, { db }: Context, info): User | Error {
+  deleteUser(args: { id: string }, { db }: Context): User | Error {
     // find user and abort if not found
     // delete user,
     //    delete posts related to that user,
@@ -70,7 +69,7 @@ const Mutation = {
     db.comments = db.comments.filter(commentItem => commentItem.author !== deletedUser.id)
     return deletedUser
   },
-  createPost(parent, args: Post, { db, pubsub }: Context, info) {
+  createPost(args: Post, { db, pubsub }: Context) {
     const userFound = db.users.some(item => item.id === args.author)
     if (!userFound) {
       // invalid foreign key
@@ -100,7 +99,7 @@ const Mutation = {
   // if post.published & change, then send UPDATE
   // if post.!published and then published, send CREATE
   // if post.published and then published, send DELETE
-  updatePost(parent, args: { id: string, data: Partial<Post> }, { db, pubsub }: Context, info): Post!{
+  updatePost(args: { id: string, data: Partial<Post> }, { db, pubsub }: Context): Post {
     const { id, data } = args
     const post = db.posts.find(item => item.id === id)
     const originalPost = { ...post } as Post
@@ -147,7 +146,7 @@ const Mutation = {
     }
     return post
   },
-  deletePost(parent, args: { id: string }, { db, pubsub }: Context, info): Post {
+  deletePost(args: { id: string }, { db, pubsub }: Context): Post {
     // splice out post matching args.id (1)
     // keep comments where comments.post !== args.id (2)
     // return deleted post item (3)
@@ -172,7 +171,7 @@ const Mutation = {
     }
     return deletedPost // (3)
   },
-  createComment(parent, args: Comment, { db, pubsub }: Context, info): Comment | Error {
+  createComment(args: Comment, { db, pubsub }: Context): Comment | Error {
     // user must exist
     // post must exist (and be published)
     const userExists = db.users.some(item => item.id === args.author)
@@ -200,7 +199,7 @@ const Mutation = {
     pubsub.publish(`Comments-${args.post}`, payload)
     return newComment
   },
-  updateComment(parent, args: { id: string, data: Partial<Comment> }, { db, pubsub }: Context, info): Comment {
+  updateComment(args: { id: string, data: Partial<Comment> }, { db, pubsub }: Context): Comment {
     const { id, data } = args
     const comment = db.comments.find(item => item.id === id)
     if (!comment) {
@@ -218,7 +217,7 @@ const Mutation = {
     }
     return comment
   },
-  deleteComment(parent, arg: { id: string }, { db, pubsub }: Context, info): Comment {
+  deleteComment(arg: { id: string }, { db, pubsub }: Context): Comment {
     const indexOfDeletedCommnet = db.comments.findIndex(item => item.id === arg.id)
     if (indexOfDeletedCommnet === NOT_FOUND) {
       throw new Error(`Can't delete.  Comment [${arg.id}] not found.`)

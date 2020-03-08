@@ -11,7 +11,7 @@
 import { Context, User, Post, Comment } from '../types/types'
 
 const Query = {
-  users(parent, args: { query: string }, { db }: Context, info): User[] {
+  users(args: { query: string }, { db }: Context): User[] {
     if (!args.query) {
       return db.users
     } else {
@@ -26,7 +26,7 @@ const Query = {
       age: 55
     }
   },
-  posts(parent, args: { query: string }, { db }: Context, info): Post[] {
+  posts(args: { query: string }, { db }: Context): Post[] {
     if (!args.query) {
       return db.posts
     }
@@ -35,7 +35,7 @@ const Query = {
       item.body.toLowerCase().includes(args.query.toLowerCase())
     )
   },
-  comments(parent, args, { db }: Context, info): Comment[] {
+  comments({ db }: Context): Comment[] {
     return db.comments
   }
 }

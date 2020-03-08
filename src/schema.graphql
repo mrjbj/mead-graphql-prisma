@@ -1,0 +1,143 @@
+#----------------
+# - Query, Mutation, Subscription are reserved names for special GraphQL types.
+#
+# - Query{}:
+#    -  contains schema declarations for GQL operations that return data
+#       from the server upon demand, as they are invoked by clients.
+#    - GQL query items are implemented via ES6 methods defined within a Query{} object i
+#      assigned to the "resolvers:" property set during GQL Server configuration (see index.ts)
+#    - Both the schema declaration and resolver implementation present as
+#      ES6 methods (e.g. not arrow function) defined inside either Query.<operation>
+#      or resolver.Query.<operation-implementation> respectively.
+#   - The name and type defined in GQL Query{} must match method name and return
+#     type implemented in resolver.
+#
+# - Mutation{}:
+#    - contains schema declarations for GQL operations that change data on
+#      server based upon parameters passed in from client.
+#    - Parameters are checked at run time for compliance to types specified by
+#      schema definition.
+#   -  Object in GQL schema definition and object assigned to resolvers: property
+#      in server config must be named "Mutation{}".
+#    - Name of mutation operations defined in schema must match name of method used
+#      to implement in resolvers: Mutation{} property of server configuration.
+#    - Return types must match also.
+#
+#  - Subscription{}:
+#    - contains schema declarations for GQL operations that return data from
+#      the server proactively whenever created, updated or changed.
+#   -  configureation/setup of the socket enabling this communication is established
+#      in the resolvers: Subscription{} property of server configuration.
+#   -  unlike Query{} of Subscription{} resolvers, Subscription{} resolvers
+#      are property oriented.  GQL schema defines a property that can be
+#      subscribed to. resolver.Subscription{} implements that property via a
+#      method named subscribe() defined within it, which receives the standard resolver
+#      arguments and returns an asyncInterator with unique channel name
+#      to be used to deliver that data.  (e.g. "asyncIterator('channel-name')")
+#   -  The updates themselves are delivered via the mutation function, which
+#      publishes the data to that endpoint over the specified channel.
+#   -  Name of GQL subscription property === Name of property defined in
+#      Subscription{} object assigned to resolver: property in server config ===
+#      name of property on object pushed out via publish event triggered in mutation.
+#   -  Channel name used in Subscription{} implementation === channel name triggered
+#      in publish() call from mutation.
+
+type Query {
+  users(query: String): [User!]!
+  posts(query: String): [Post!]!
+  comments(query: String): [Comment!]!
+  me: User!
+}
+type Mutation {
+  createUser(name: String!, email: String!, age: Int): User!
+  updateUser(id: ID!, data: UpdateUserInput!): User!
+  deleteUser(id: ID!): User!
+  createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
+  updatePost(id: ID!, data: UpdatePostInput!): Post!
+  deletePost(id: ID!): Post!
+  createComment(text: String!, author: ID!, post: ID!): Comment!
+  updateComment(id: ID!, data: UpdateCommentInput): Comment!
+  deleteComment(id: ID!): Comment!
+}
+type Subscription {
+  comment(postId: ID!): CommentSubscriptionPayload!
+  post: PostSubscriptionPayload!
+}
+
+# ------------
+# Custom Types
+# ------------
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+  posts: [Post!]!
+  comments: [Comment!]!
+}
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+  published: Boolean!
+  author: User!
+  comments: [Comment!]!
+}
+type Comment {
+  id: ID!
+  text: String!
+  post: Post!
+  author: User!
+}
+
+enum MutationType {
+  CREATED
+  UPDATED
+  DELETED
+}
+type PostSubscriptionPayload {
+  mutation: Mutation!
+  data: Post!
+}
+
+type CommentSubscriptionPayload {
+  mutation: MutationType!
+  data: Comment!
+}
+
+# gives us runtime parameter checking...
+# --------------------------------------
+# input types - create
+# --------------------------------------
+input CreateUserInput {
+  name: String!
+  email: String!
+  age: Int
+}
+input CreatePostInput {
+  title: String!
+  body: String!
+  published: Boolean!
+  author: ID!
+}
+input CreateCommentInput {
+  text: String!
+  author: ID!
+  post: ID!
+}
+# ---------------------
+# input types - Update
+# ---------------------
+input UpdateUserInput {
+  name: String
+  email: String
+  age: Int
+}
+input UpdatePostInput {
+  title: String
+  body: String
+  published: Boolean
+}
+input UpdateCommentInput {
+  text: String
+}

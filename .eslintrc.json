@@ -1,0 +1,38 @@
+{
+  "extends": ["eslint:recommended"],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": ["**/node_modules"],
+  "rules": {
+    "array-bracket-spacing": "warn",
+    "arrow-parens": "off",
+    "arrow-spacing": "warn",
+    "block-scoped-var": "error",
+    "block-spacing": "warn",
+    "capitalized-comments": "warn",
+    "camelcase": "warn",
+    "comma-dangle": "warn",
+    "comma-spacing": "warn",
+    "constructor-super": "warn",
+    "curly": "warn",
+    "default-case": "warn",
+    "eol-last": "warn",
+    "func-call-spacing": "warn",
+    "indent": "warn",
+    "key-spacing": "warn",
+    "keyword-spacing": "warn",
+    "multiline-comment-style": "warn",
+    "new-cap": "warn",
+    "new-parens": "warn",
+    "newline-per-chained-call": "warn",
+    "no-dupe-args": "warn",
+    "no-dupe-keys": "warn",
+    "no-duplicate-case": "warn",
+    "no-duplicate-imports": "warn",
+    "no-extra-semi": "warn",
+    "no-irregular-whitespace": "warn",
+    "no-magic-numbers": "warn"
+  }
+}
