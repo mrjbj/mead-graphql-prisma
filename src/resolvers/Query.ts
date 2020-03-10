@@ -39,8 +39,12 @@ const Query: ResolverMap = {
     }
     return prisma.query.posts(queryArgs, info)
   },
-  comments({ db }: Context): Comment[] {
-    return db.comments
+  comments(_parent, args, { prisma }: Context, info): Promise<Comment[]> {
+    const queryArgs: DynamicObject = {}
+    if (queryArgs) {
+      queryArgs.where = { text_contains: args.query }
+    }
+    return prisma.query.comments(queryArgs, info)
   }
 }
 
