@@ -11,11 +11,18 @@
 //  - GraphQL resolver runtime is promise-aware. If resolver returns a promise,
 //    graphql will wait for it to resolve, so it's okay to return
 //    a promise from resolver function without await   (1)
-import { Context, User, Post, Comment, ResolverMap } from '../types/types'
+import { Context, User, Post, Comment, ResolverMap, DynamicObject } from '../types/types'
 
 const Query: ResolverMap = {
-  users(_parent, _args, { prisma }, info): Promise<User[]> {
-    return prisma.query.users(undefined, info) // (1)
+  users(_parent, args, { prisma }, info): Promise<User[]> {
+    const queryArgs: DynamicObject = {}
+    if (args.query) {
+      // api expects {where: {username_contains: "value"}}
+      queryArgs.where = {
+        OR: [{ name_contains: args.query }, { email_contains: args.query }]
+      }
+    }
+    return prisma.query.users(queryArgs, info) // (1)
   },
   me() {
     return {
@@ -25,15 +32,12 @@ const Query: ResolverMap = {
       age: 55
     }
   },
-  posts(_parent, _args, { prisma }: Context, info): Promise<Post[]> {
-    return prisma.query.posts(undefined, info)
-    // if (!args.query) {
-    //   return db.posts
-    // }
-    // return db.posts.filter(item =>
-    //   item.title.toLowerCase().includes(args.query.toLowerCase()) ||
-    //   item.body.toLowerCase().includes(args.query.toLowerCase())
-    // )
+  posts(_parent, args, { prisma }: Context, info): Promise<Post[]> {
+    const queryArgs: DynamicObject = {}
+    if (args.query) {
+      queryArgs.where = { OR: [{ title_contains: args.query }, { body_contains: args.query }] }
+    }
+    return prisma.query.posts(queryArgs, info)
   },
   comments({ db }: Context): Comment[] {
     return db.comments

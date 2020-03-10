@@ -33,3 +33,7 @@ export interface ResolverMap {
   [field: string]: ResolverFunction
 }
 export type Context = { db: DB, pubsub: PubSub, prisma: Prisma }
+
+export type DynamicObject = {
+  [key: string]: any
+}
