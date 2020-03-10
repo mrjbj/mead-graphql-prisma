@@ -1,16 +1,16 @@
+type User {
+  id: ID! @id
+  username: String! @unique
+  email: String! @unique
+  reviews: [Review!]! @relation(name: "ReviewToAuthor", onDelete: CASCADE)
+}
+
 type Review {
   id: ID! @id
   text: String
   rating: Int!
   author: User! @relation(name: "ReviewToAuthor", onDelete: SET_NULL)
   movie: Movie! @relation(name: "ReviewToMovie", onDelete: SET_NULL)
-}
-
-type User {
-  id: ID! @id
-  username: String! @unique
-  email: String! @unique
-  reviews: [Review!]! @relation(name: "ReviewToAuthor", onDelete: CASCADE)
 }
 
 type Movie {

@@ -31,7 +31,7 @@ import Subscription from './resolvers/Subscription'
 import User from './resolvers/User'
 import Post from './resolvers/Post'
 import Comment from './resolvers/Comment'
-import './prisma' // just to get it to run
+import { prisma } from './prisma'
 
 if (process.env.NODE_ENV !== 'production') {
   watchSchemaFiles() // ts-node-dev should look for changes to schema.graphql also
@@ -52,7 +52,8 @@ const server = new GraphQLServer({
   },
   context: {
     db,
-    pubsub
+    pubsub,
+    prisma
   }                                  // (6)
 })
 

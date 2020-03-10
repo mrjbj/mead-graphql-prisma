@@ -1,4 +1,5 @@
 import { PubSub } from "graphql-yoga"
+import { Prisma } from 'prisma-binding'
 
 export type User = {
   id: string,
@@ -26,4 +27,9 @@ export type DB = {
   comments: Comment[]
 }
 
-export type Context = { db: DB, pubsub: PubSub }
+type ResolverFunction = (parent: any, args: any, context: Context, info: any) => any
+
+export interface ResolverMap {
+  [field: string]: ResolverFunction
+}
+export type Context = { db: DB, pubsub: PubSub, prisma: Prisma }

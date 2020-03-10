@@ -8,15 +8,14 @@
 //  - These related resolvers have same name as the non-scalar type (e.g. Post, Comment, User).
 //
 //    Note: methods are attached to objects, so 'this' is important and arrow functions not used.
-import { Context, User, Post, Comment } from '../types/types'
+//  - GraphQL resolver runtime is promise-aware. If resolver returns a promise,
+//    graphql will wait for it to resolve, so it's okay to return
+//    a promise from resolver function without await   (1)
+import { Context, User, Post, Comment, ResolverMap } from '../types/types'
 
-const Query = {
-  users(args: { query: string }, { db }: Context): User[] {
-    if (!args.query) {
-      return db.users
-    } else {
-      return db.users.filter(item => item.name.toLowerCase().includes(args.query.toLowerCase()))
-    }
+const Query: ResolverMap = {
+  users(_parent, _args, { prisma }, info): Promise<User[]> {
+    return prisma.query.users(undefined, info) // (1)
   },
   me() {
     return {
@@ -26,14 +25,15 @@ const Query = {
       age: 55
     }
   },
-  posts(args: { query: string }, { db }: Context): Post[] {
-    if (!args.query) {
-      return db.posts
-    }
-    return db.posts.filter(item =>
-      item.title.toLowerCase().includes(args.query.toLowerCase()) ||
-      item.body.toLowerCase().includes(args.query.toLowerCase())
-    )
+  posts(_parent, _args, { prisma }: Context, info): Promise<Post[]> {
+    return prisma.query.posts(undefined, info)
+    // if (!args.query) {
+    //   return db.posts
+    // }
+    // return db.posts.filter(item =>
+    //   item.title.toLowerCase().includes(args.query.toLowerCase()) ||
+    //   item.body.toLowerCase().includes(args.query.toLowerCase())
+    // )
   },
   comments({ db }: Context): Comment[] {
     return db.comments
