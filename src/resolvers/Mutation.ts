@@ -1,24 +1,24 @@
-import { Context, User, Post, Comment, ResolverMap, DynamicObject } from '../types/types'
+// Interface for mutation object defined in types as "AppMutation"
+// GQL serves as 'promise aware' client so can return promise from async methods
+// rather than having to "await" within each method first  // (1)
+import { Context, User, Post, Comment, ResolverMap, DynamicObject, AppMutation, Exists } from '../types/types'
 import { NOT_FOUND, APPLICATION_ERROR } from '../util/constants'
 import { v4 as uuidv4 } from "uuid"
-import Verror from 'verror'
 import { SetVerror, jStringify } from '../util/applicationError'
-import { Mutation, UserCreateInput } from '../generated/PrismaBindings'
-import { GraphQLResolveInfo } from 'graphql'
 import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
 
-const Mutation = {
-  async createUser(_parent: any, args: { data: { name: string, email: string } }, { prisma }: Context, info: any): Promise<User> {
+const Mutation: AppMutation = {
+  async createUser(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
     Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
+
     const emailTaken = await prisma.exists.User({ email: args.data.email })
     if (emailTaken) {
       throw SetVerror(undefined, "Email address already in use.", "email", args.data.email)
     }
-    const newUser = await prisma.mutation.createUser({ data: args.data }, info)
-    return newUser
+    return prisma.mutation.createUser({ data: args.data }, info)  // (1)
   },
   updateUser(args: { id: string, data: Partial<User> }, { db }: Context): User | Error {
     // find id, if found
@@ -47,32 +47,18 @@ const Mutation = {
     }
     return user
   },
-  deleteUser(args: { id: string }, { db }: Context): User | Error {
-    // find user and abort if not found
-    // delete user,
-    //    delete posts related to that user,
-    //    delete comments associated with any posts created by that user,
-    //    delete comments created by that user.
-    const userIndex = db.users.findIndex(item => item.id === args.id)
-    if (userIndex === NOT_FOUND) {
-      throw new Error(`User [${args.id}] not found.`)
-    }
-    // slice returns [], even if containing only one element
-    const deletedUser = db.users.splice(userIndex, 1)[0]
+  async deleteUser(_parent, args, { prisma }, info) {
+    // - find user and abort if not found
+    // - else delete user, with understanding that database will cascade delete
+    //   any associated posts or comments tied to them.
+    Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
+    Assert.strictEqual(typeof args.id, "string", `AssertError: [args.id] not a string. [${args.id}]`)
 
-    db.posts = db.posts.filter(postItem => {
-      // if postItem was created by deletedUser then
-      //   - only keep comments not tied to that post. (1)
-      //   - don't keep the post itself (e.g keep the ones that !match). (2)
-      const match = postItem.author === deletedUser.id
-      if (match) {
-        db.comments = db.comments.filter(comment => comment.post !== postItem.id) // (1)
-      }
-      return !match  // (2)
-    })
-    // keep only comments not created by that user
-    db.comments = db.comments.filter(commentItem => commentItem.author !== deletedUser.id)
-    return deletedUser
+    const userFound = await prisma.exists.User({ id: args.id })
+    if (!userFound) {
+      throw SetVerror(undefined, `Can't delete. User id [${args.id}] not found.`, "args.id", args.id)
+    }
+    return prisma.mutation.deleteUser({ where: { id: args.id } }, info)
   },
   createPost(args: Post, { db, pubsub }: Context) {
     const userFound = db.users.some(item => item.id === args.author)
