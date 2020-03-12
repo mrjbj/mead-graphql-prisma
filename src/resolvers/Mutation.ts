@@ -1,7 +1,7 @@
 // Interface for mutation object defined in types as "AppMutation"
 // GQL serves as 'promise aware' client so can return promise from async methods
 // rather than having to "await" within each method first  // (1)
-import { Context, User, Post, Comment, ResolverMap, DynamicObject, AppMutation, Exists } from '../types/types'
+import { Context, Post, Comment, AppMutation } from '../types/types'
 import { NOT_FOUND, APPLICATION_ERROR } from '../util/constants'
 import { v4 as uuidv4 } from "uuid"
 import { SetVerror, jStringify } from '../util/applicationError'
@@ -13,79 +13,29 @@ const Mutation: AppMutation = {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
     Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
-
-    const emailTaken = await prisma.exists.User({ email: args.data.email })
-    if (emailTaken) {
-      throw SetVerror(undefined, "Email address already in use.", "email", args.data.email)
-    }
     return prisma.mutation.createUser({ data: args.data }, info)  // (1)
   },
-  updateUser(args: { id: string, data: Partial<User> }, { db }: Context): User | Error {
-    // find id, if found
-    // update email, if not duplicate
-    // update name, no worry
-    // update age, if !undefined (null is okay, GQL will check for Int at runtime)   // (1)
-    const { id, data } = args
-    const user = db.users.find(item => item.id === id)
-    if (!user) {
-      throw new Error(`User [${id}] not found.`)
-    }
-    if (typeof data.email === 'string') {
-      // argument provided, check if not unique before udpating
-      const duplicate = db.users.some(item => item.email === data.email && item.id !== id)
-      if (duplicate) {
-        throw new Error(`Email [${data.email}] registered already.`)
-      } else {
-        user.email = data.email
-      }
-    }
-    if (typeof data.name === 'string') {
-      user.name = data.name
-    }
-    if (typeof data.age !== 'undefined') {       // (1)
-      user.age = data.age
-    }
-    return user
-  },
-  async deleteUser(_parent, args, { prisma }, info) {
-    // - find user and abort if not found
-    // - else delete user, with understanding that database will cascade delete
-    //   any associated posts or comments tied to them.
+  async updateUser(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.id, "string", `AssertError: [args.id] not a string. [${args.id}]`)
-
-    const userFound = await prisma.exists.User({ id: args.id })
-    if (!userFound) {
-      throw SetVerror(undefined, `Can't delete. User id [${args.id}] not found.`, "args.id", args.id)
-    }
+    return prisma.mutation.updateUser({ where: { id: args.id }, data: args.data }, info)
+  },
+  async deleteUser(_parent, args, { prisma }, info) {
+    Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
+    Assert.strictEqual(typeof args.id, "string", `AssertError: [args.id] not a string. [${args.id}]`)
     return prisma.mutation.deleteUser({ where: { id: args.id } }, info)
   },
-  createPost(args: Post, { db, pubsub }: Context) {
-    const userFound = db.users.some(item => item.id === args.author)
-    if (!userFound) {
-      // invalid foreign key
-      throw new Error(`No user found for id [${args.author}].`)
-    }
-    const duplicatePost = db.posts.some(item => item.title === args.title)
-    if (duplicatePost) {
-      throw new Error(`Post already exists with title [${args.title}]`)
-    }
-    // create new, save and return
-    const newPost: Post = {
-      id: uuidv4(),
-      ...args
-    }
-    db.posts.push(newPost)
-    // only release if published
-    if (newPost.published) {
-      pubsub.publish('Posts', {
-        post: {
-          mutation: 'CREATED',
-          data: newPost
-        }
-      })
-    }
-    return newPost
+  async createPost(_parent, args, { prisma }, info) {
+    Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
+    Assert.strictEqual(typeof args.data.title, "string", `AssertError: [args.data.title] not a string. [${args.data.title}]`)
+    return prisma.mutation.createPost({
+      data: {
+        title: args.data.title,
+        body: args.data.body,
+        published: args.data.published,
+        author: { connect: { id: args.data.author } }
+      }
+    }, info)
   },
   // if post.published & change, then send UPDATE
   // if post.!published and then published, send CREATE
