@@ -1,19 +1,24 @@
-import { Context, User, Post, Comment } from '../types/types'
-import { NOT_FOUND } from '../util/constants'
+import { Context, User, Post, Comment, ResolverMap, DynamicObject } from '../types/types'
+import { NOT_FOUND, APPLICATION_ERROR } from '../util/constants'
 import { v4 as uuidv4 } from "uuid"
+import Verror from 'verror'
+import { SetVerror, jStringify } from '../util/applicationError'
+import { Mutation, UserCreateInput } from '../generated/PrismaBindings'
+import { GraphQLResolveInfo } from 'graphql'
+import Assert from 'assert'
+import { Prisma } from 'prisma-binding'
 
 const Mutation = {
-  createUser(args: User, { db }: Context): User | Error {
-    const emailTaken = db.users.some(item => item.email === args.email)
+  async createUser(_parent: any, args: { data: { name: string, email: string } }, { prisma }: Context, info: any): Promise<User> {
+    Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
+    Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
+    Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
+    const emailTaken = await prisma.exists.User({ email: args.data.email })
     if (emailTaken) {
-      throw new Error(`Email [${args.email}] already in use.`)
+      throw SetVerror(undefined, "Email address already in use.", "email", args.data.email)
     }
-    const user: User = {
-      id: uuidv4(),
-      ...args
-    }
-    db.users.push(user)
-    return user
+    const newUser = await prisma.mutation.createUser({ data: args.data }, info)
+    return newUser
   },
   updateUser(args: { id: string, data: Partial<User> }, { db }: Context): User | Error {
     // find id, if found

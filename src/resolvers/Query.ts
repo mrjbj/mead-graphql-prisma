@@ -12,9 +12,15 @@
 //    graphql will wait for it to resolve, so it's okay to return
 //    a promise from resolver function without await   (1)
 import { Context, User, Post, Comment, ResolverMap, DynamicObject } from '../types/types'
+import Assert from 'assert'
+import { Prisma } from 'prisma-binding'
+import { jStringify } from '../util/applicationError'
 
 const Query: ResolverMap = {
   users(_parent, args, { prisma }, info): Promise<User[]> {
+    Assert(prisma instanceof Prisma, `Assert: parameter [prisma] is not an object: [${jStringify(prisma)}]`)
+    console.log(jStringify(args))
+
     const queryArgs: DynamicObject = {}
     if (args.query) {
       // api expects {where: {username_contains: "value"}}

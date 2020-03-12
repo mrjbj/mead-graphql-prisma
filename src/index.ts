@@ -33,6 +33,8 @@ import Post from './resolvers/Post'
 import Comment from './resolvers/Comment'
 import { prisma } from './prisma'
 
+// import './prisma'
+
 if (process.env.NODE_ENV !== 'production') {
   watchSchemaFiles() // ts-node-dev should look for changes to schema.graphql also
 }

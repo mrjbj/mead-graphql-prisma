@@ -1,5 +1,6 @@
 import Verror from "verror"
 import Assert from "assert"
+import { APPLICATION_ERROR } from "./constants"
 
 // extends Javascript Error object in a Typescript friendly way
 export const extendError = (err: Error, newProperty: string, value: any): void => {
@@ -26,9 +27,21 @@ export const extendError = (err: Error, newProperty: string, value: any): void =
 //     throw verror
 
 // need to do it this way so typescript can work with default values in function
-export let setVerror: (cause: Verror | undefined, message: string, propertyName?: string, propertyValue?: any, name?: string) => Verror
+export let SetVerror: (cause: Verror | undefined, message: string, propertyName?: string, propertyValue?: any, name?: string) => Verror
 
-setVerror = (cause, message, propertyName = "n/a", propertyValue = "n/a", name = "ApplicationError") => {
+SetVerror = (cause, message, propertyName = "n/a", propertyValue = "n/a", name = APPLICATION_ERROR) => {
   Assert.equal(typeof message, "string", "parameter [message] not a string")
   return new Verror({ cause, name, info: { propertyName, propertyValue } }, message)
+}
+
+export const jStringify = (object: any, pretty = true) => {
+  Assert.equal(typeof pretty, "boolean", `Assert: parameter [pretty] is not boolean. [${pretty}]`)
+
+  let msg = ""
+
+  if (object instanceof Error) {
+    msg = "JSON warning: not all properties on Error are enumerable."
+  }
+  msg = msg + (pretty ? JSON.stringify(object, null, 2) : JSON.stringify(object))
+  return JSON.stringify(object, null, 2)
 }
