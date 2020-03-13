@@ -55,10 +55,10 @@ export interface AppMutation {
   createPost: <T = Post>(parent: undefined, args: { data: { title: string, body: string, published: boolean, author: string } }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   createComment: <T = Comment>(parent: undefined, args: { data: { text: string, author: string, post: string } }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   updateUser: <T = User | null  >(parent: undefined, args: { id: string, data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
-  // updatePost: <T = Post | null>(args: { data: PostUpdateInput, where: PostWhereUniqueInput }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<T | null>,
-  // updateComment: <T = Comment | null>(args: { data: CommentUpdateInput, where: CommentWhereUniqueInput }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<T | null>,
+  updatePost: <T = Post | null> (parent: undefined, args: { id: string, data: Partial<Post> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
+  updateComment: <T = Comment | null>(parent: undefined, args: { id: string, data: Partial<Comment> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
   deleteUser: <T = User | null>(parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
-  // deletePost: <T = Post | null>(args: { where: PostWhereUniqueInput }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<T | null>,
-  // deleteComment: <T = Comment | null>(args: { where: CommentWhereUniqueInput }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<T | null>,
+  deletePost: <T = Post | null>(parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
+  deleteComment: <T = Comment | null>(parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
 }
 
