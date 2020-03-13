@@ -1,5 +1,5 @@
-import { Context } from '../types/types'
-
+import { Context, AppSubscription } from '../types/types'
+import { Prisma } from 'prisma-binding'
 // ------------
 // - Subscription is reserved type name   (e.g. type Subscription{<subscription items>})   // (0)
 // - Like Queries, Subscription items are declared in schema as methods,
@@ -11,23 +11,20 @@ import { Context } from '../types/types'
 //   specifies the socket's channelName and a payload object that must
 //   contain a property with name matching to the subscription item name             // (3)
 // - Notes (1) and (3) must match to the name defined in schema (0)
-const Subscription = {
+const Subscription: AppSubscription = {
   comment: {
-    subscribe(args: { postId: string }, ctx: Context) {
+    async subscribe(_parent, args, { prisma }, info) {
       // subscribe to comments associated with a particular post.
-      //  1. make sure post exists
-      //  2. setup channel to publish to that post
-      const { db, pubsub } = ctx
-      const post = db.posts.find(item => item.id === args.postId)
-      if (!post) {
-        throw new Error(`Cannot subscribe to comments.  Post [${args.postId}] does not exist.`)
-      }
-      return pubsub.asyncIterator(`Comments-${args.postId}`)
+      return prisma.subscription.comment({
+        where: { node: { post: { id: args.postId } } }
+      }, info)
     }
   },
   post: {
-    subscribe(ctx: Context) {
-      return ctx.pubsub.asyncIterator(`Posts`)
+    async subscribe(_parent, args, { prisma }, info) {
+      return prisma.subscription.post({
+        where: { node: { published: args.published } }
+      }, info)
     }
   }
 }

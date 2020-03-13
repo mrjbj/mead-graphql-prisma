@@ -62,3 +62,52 @@ export interface AppMutation {
   deleteComment: <T = Comment | null>(parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
 }
 
+
+export interface AppQuery {
+  users: <T = Array<User | null>>(parent: undefined, args: { query: string } | null, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  posts: <T = Array<Post | null>>(parent: undefined, args: { query: string } | null, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  comments: <T = Array<Comment | null>>(parent: undefined, args: { query: string } | null, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  // me: <T = User | null>(parent: undefined, args: undefined, context: undefined, info?: GraphQLResolveInfo | string) => Promise<T>,
+}
+
+export interface AppSubscription {
+  comment: { subscribe<T = Comment>(parent: undefined, args: { postId: string }, context: Context, info?: GraphQLResolveInfo | string): Promise<AsyncIterator<T | null>> }
+  post: { subscribe<T = Post>(parent: undefined, args: { published: boolean }, context: Context, info?: GraphQLResolveInfo | string): Promise<AsyncIterator<T | null>> }
+  // user: <T = UserSubscriptionPayload | null>(args: { where?: UserSubscriptionWhereInput | null }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<AsyncIterator<T | null>>,
+  // post: <T = PostSubscriptionPayload | null>(args: { where?: PostSubscriptionWhereInput | null }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<AsyncIterator<T | null>>,
+}
+
+
+export interface UserSubscriptionPayload {
+  mutation: MutationType
+  node?: User | null
+  updatedFields?: Array<String> | null
+  previousValues?: UserPreviousValues | null
+}
+
+export type MutationType = 'CREATED' | 'UPDATED' | 'DELETED'
+
+
+
+export interface UserPreviousValues {
+  id: String
+  name: String
+  email: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+export interface CommentSubscriptionPayload {
+  mutation: MutationType
+  node?: Comment | null
+  updatedFields?: Array<String> | null
+  previousValues?: CommentPreviousValues | null
+}
+
+export interface CommentPreviousValues {
+  id: String
+  text: String
+  createdAt: DateTime
+  updatedAt?: DateTime | null
+}
+export type DateTime = Date | string

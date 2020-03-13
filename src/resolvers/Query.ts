@@ -11,44 +11,36 @@
 //  - GraphQL resolver runtime is promise-aware. If resolver returns a promise,
 //    graphql will wait for it to resolve, so it's okay to return
 //    a promise from resolver function without await   (1)
-import { Context, User, Post, Comment, ResolverMap, DynamicObject } from '../types/types'
+import { DynamicObject, AppQuery } from '../types/types'
 import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
 import { jStringify } from '../util/applicationError'
 
-const Query: ResolverMap = {
-  users(_parent, args, { prisma }, info): Promise<User[]> {
+const Query: AppQuery = {
+  async users(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: parameter [prisma] is not an object: [${jStringify(prisma)}]`)
-    console.log(jStringify(args))
 
     const queryArgs: DynamicObject = {}
-    if (args.query) {
-      // api expects {where: {username_contains: "value"}}
+    // != means both 'null' and 'undefined' resolve to false, so query must contain something.
+    if (args!.query != null) {
+      // api expects {where: {name_contains: "value"}}
       queryArgs.where = {
-        OR: [{ name_contains: args.query }, { email_contains: args.query }]
+        OR: [{ name_contains: args!.query }, { email_contains: args!.query }]
       }
     }
     return prisma.query.users(queryArgs, info) // (1)
   },
-  me() {
-    return {
-      id: 'abc123',
-      name: 'Jason Jones',
-      email: 'jason@brucejones.biz',
-      age: 55
-    }
-  },
-  posts(_parent, args, { prisma }: Context, info): Promise<Post[]> {
+  async posts(_parent, args, { prisma }, info) {
     const queryArgs: DynamicObject = {}
-    if (args.query) {
-      queryArgs.where = { OR: [{ title_contains: args.query }, { body_contains: args.query }] }
+    if (args!.query != null) {
+      queryArgs.where = { OR: [{ title_contains: args!.query }, { body_contains: args!.query }] }
     }
     return prisma.query.posts(queryArgs, info)
   },
-  comments(_parent, args, { prisma }: Context, info): Promise<Comment[]> {
+  async comments(_parent, args, { prisma }, info) {
     const queryArgs: DynamicObject = {}
-    if (queryArgs) {
-      queryArgs.where = { text_contains: args.query }
+    if (args!.query != null) {
+      queryArgs.where = { text_contains: args!.query }
     }
     return prisma.query.comments(queryArgs, info)
   }

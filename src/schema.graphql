@@ -63,7 +63,7 @@ type Mutation {
 }
 type Subscription {
   comment(postId: ID!): CommentSubscriptionPayload!
-  post: PostSubscriptionPayload!
+  post(published: Boolean): PostSubscriptionPayload!
 }
 
 # ------------
@@ -97,13 +97,13 @@ enum MutationType {
   DELETED
 }
 type PostSubscriptionPayload {
-  mutation: Mutation!
-  data: Post!
+  mutation: MutationType!
+  node: Post
 }
 
 type CommentSubscriptionPayload {
   mutation: MutationType!
-  data: Comment!
+  node: Comment
 }
 
 # gives us runtime parameter checking...

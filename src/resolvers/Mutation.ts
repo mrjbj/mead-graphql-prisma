@@ -30,7 +30,7 @@ const Mutation: AppMutation = {
         title: args.data.title,
         body: args.data.body,
         published: args.data.published,
-        author: { conneddct: { id: args.data.author } }
+        author: { connect: { id: args.data.author } }
       }
     }, info)
   },
