@@ -4,13 +4,28 @@
 import { AppMutation } from '../types/types'
 import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
+import { SetVerror } from '../util/applicationError'
+import bcrypt from 'bcryptjs'
 
 const Mutation: AppMutation = {
   async createUser(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
     Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
-    return prisma.mutation.createUser({ data: args.data }, info)  // (1)
+    Assert.strictEqual(typeof args.data.password, "string", `Assert: [args.data.password] not a string. [${args.data.password}]`)
+
+    if (!args.data.password) {
+      throw SetVerror(undefined, `password is required.`)
+    } else {
+      if (args.data.password.length < 8) {
+        throw SetVerror(undefined, `Password length must be 8 characters or more.`)
+      }
+    }
+    const password = bcrypt.hashSync(args.data.password)
+    return prisma.mutation.createUser({
+      data: { ...args.data, password }
+    }, info
+    )  // (1)
   },
   async updateUser(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)

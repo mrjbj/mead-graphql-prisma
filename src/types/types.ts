@@ -6,7 +6,7 @@ export type User = {
   id: string,
   name: string,
   email: string,
-  age?: number
+  password: string
 }
 export type Post = {
   id: string,
@@ -51,9 +51,9 @@ export interface Exists {
 }
 
 export interface AppMutation {
-  createUser: <T = User>(parent: undefined, args: { data: { name: string, email: string } }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
-  createPost: <T = Post>(parent: undefined, args: { data: { title: string, body: string, published: boolean, author: string } }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
-  createComment: <T = Comment>(parent: undefined, args: { data: { text: string, author: string, post: string } }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  createUser: <T = User>(parent: undefined, args: { data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  createPost: <T = Post>(parent: undefined, args: { data: Partial<Post> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  createComment: <T = Comment>(parent: undefined, args: { data: Partial<Comment> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   updateUser: <T = User | null  >(parent: undefined, args: { id: string, data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
   updatePost: <T = Post | null> (parent: undefined, args: { id: string, data: Partial<Post> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
   updateComment: <T = Comment | null>(parent: undefined, args: { id: string, data: Partial<Comment> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
