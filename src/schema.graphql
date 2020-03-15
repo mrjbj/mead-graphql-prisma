@@ -73,6 +73,7 @@ type User {
   id: ID!
   name: String!
   email: String!
+  password: String!
   posts: [Post!]!
   comments: [Comment!]!
 }
@@ -113,6 +114,7 @@ type CommentSubscriptionPayload {
 input CreateUserInput {
   name: String!
   email: String!
+  password: String!
 }
 input CreatePostInput {
   title: String!
@@ -131,6 +133,7 @@ input CreateCommentInput {
 input UpdateUserInput {
   name: String
   email: String
+  password: String
 }
 input UpdatePostInput {
   title: String

@@ -1,7 +1,18 @@
+// 1. npx prisma help to (init, deploy, delete database baesd upon datamodel.prisma)
+//    (this creates the postgres database)
+// 2. then use graphql-cli tools to get-schema from database model created by datamodel.prisma
+//    npx graphql-cli get-schema   -> writes ./src/generated/prisma.graphql  based upon postgres database
+// 3. prisma.graphql (created from step 2), is then provided to Prisma() constructor in nodejs startup  for connect at runtime //(3)
+// 4. prisma.graphql (created from step 2), is used as input to generate typescript bindings for use by prisma-binding client
+//    (e.g. graphql-binding -i ./src/generated/prisma.graphql -l typescript -b ./src/generated/PrismaBindings.ts)
+// 5. .graphqlconfig can be used to configure all of this stuff (both runtime connection for endpoint and codegen settings.)
+//    also note that the line "prisma":"prisma/prisma.yml", in .graphqlconfig is there to allow graphql-cli to access prisma server
+//    for get-schema without having to know the configured secret.
+
 import { Prisma } from 'prisma-binding'
 
 export const prisma = new Prisma({
-  typeDefs: './src/generated/prisma.graphql',
+  typeDefs: './src/generated/prisma.graphql',  // (3)
   endpoint: 'http://localhost:4466',
   secret: 'thisismysupersecrettextforreals'
 })
