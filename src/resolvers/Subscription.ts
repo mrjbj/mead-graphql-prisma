@@ -1,5 +1,4 @@
-import { Context, AppSubscription } from '../types/types'
-import { Prisma } from 'prisma-binding'
+import { AppSubscription } from '../types/types'
 // ------------
 // - Subscription is reserved type name   (e.g. type Subscription{<subscription items>})   // (0)
 // - Like Queries, Subscription items are declared in schema as methods,
