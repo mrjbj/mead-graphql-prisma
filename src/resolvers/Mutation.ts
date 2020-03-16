@@ -1,13 +1,33 @@
 // Interface for mutation object defined in types as "AppMutation"
-// GQL serves as 'promise aware' client so can return promise from async methods
+// GQL serves are 'promise aware' clients so we can return promise from async methods
 // rather than having to "await" within each method first  // (1)
-import { AppMutation } from '../types/types'
+// JSON Web Tokens:
+//  - jsonwebtoken.sign takes {payload} and secret to ensure that payload not altered. // (2)
+//  - {payload} is public information -> anyone can decode it via jwt.decode(token)  // (3)
+// - jwt.verify() both decodes and verifies that payload not altered  jwt.verify(token, secret) // (4)
+
+/*
+const token = jwt.sign({ id: 46 }, 'mysecret') // (2)
+console.log(token)
+const decoded = jwt.decode(token) // (3)
+console.log(decoded)
+const decode2 = jwt.verify(token, 'mysecret')
+console.log(decode2)
+*/
+
+import { AppMutation, AuthorizationPayload, User } from '../types/types'
 import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+
 
 const Mutation: AppMutation = {
+  // hash and save new password in database // (1)
+  // return JSON web token for authorization back to client // (2)
+  // note that 'info' not provided in this case. without it, returns only scalar fields
+  //  has something to do with fact that we are returning custom object rathern than pure entity.
   async createUser(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
@@ -22,10 +42,11 @@ const Mutation: AppMutation = {
       }
     }
     const password = bcrypt.hashSync(args.data.password)
-    return prisma.mutation.createUser({
-      data: { ...args.data, password }
-    }, info
-    )  // (1)
+    const newUser: User = await prisma.mutation.createUser({ data: { ...args.data, password } }) // (1), (3)
+    return {
+      user: newUser,
+      token: jwt.sign({ userId: newUser.id }, 'thisissecret')
+    } as AuthorizationPayload
   },
   async updateUser(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)

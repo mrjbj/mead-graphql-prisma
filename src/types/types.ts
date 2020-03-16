@@ -28,11 +28,12 @@ export type DB = {
   comments: Comment[]
 }
 
-type ResolverFunction = (parent: any, args: any, context: Context, info: any) => any
-
-export interface ResolverMap {
-  [field: string]: ResolverFunction
+// type ResolverFunction = (parent: any, args: any, context: Context, info: any) => any
+export type AuthorizationPayload = {
+  user: User,
+  token: string
 }
+
 export type Context = { db: DB, pubsub: PubSub, prisma: Prisma }
 
 export type DynamicObject = {
@@ -51,7 +52,7 @@ export interface Exists {
 }
 
 export interface AppMutation {
-  createUser: <T = User>(parent: undefined, args: { data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  createUser: <T = AuthorizationPayload>(parent: undefined, args: { data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   createPost: <T = Post>(parent: undefined, args: { data: Partial<Post> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   createComment: <T = Comment>(parent: undefined, args: { data: Partial<Comment> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   updateUser: <T = User | null  >(parent: undefined, args: { id: string, data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,

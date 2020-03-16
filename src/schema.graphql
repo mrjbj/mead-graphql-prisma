@@ -49,7 +49,7 @@ type Query {
   me: User!
 }
 type Mutation {
-  createUser(data: CreateUserInput!): User!
+  createUser(data: CreateUserInput!): AuthorizationPayload!
   createPost(data: CreatePostInput!): Post!
   createComment(data: CreateCommentInput!): Comment!
 
@@ -65,7 +65,10 @@ type Subscription {
   comment(postId: ID!): CommentSubscriptionPayload!
   post(published: Boolean): PostSubscriptionPayload!
 }
-
+type AuthorizationPayload {
+  token: String!
+  user: User!
+}
 # ------------
 # Custom Types
 # ------------
