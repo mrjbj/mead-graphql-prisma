@@ -29,7 +29,7 @@ export type DB = {
 }
 
 // type ResolverFunction = (parent: any, args: any, context: Context, info: any) => any
-export type AuthorizationPayload = {
+export interface AuthorizationPayload extends Object {
   user: User,
   token: string
 }
@@ -52,7 +52,7 @@ export interface Exists {
 }
 
 export interface AppMutation {
-  createUser: <T = AuthorizationPayload>(parent: undefined, args: { data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
+  createUser: (parent: undefined, args: { data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<AuthorizationPayload>,
   createPost: <T = Post>(parent: undefined, args: { data: Partial<Post> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   createComment: <T = Comment>(parent: undefined, args: { data: Partial<Comment> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   updateUser: <T = User | null  >(parent: undefined, args: { id: string, data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,

@@ -24,11 +24,17 @@ import jwt from 'jsonwebtoken'
 
 
 const Mutation: AppMutation = {
-  // hash and save new password in database // (1)
-  // return JSON web token for authorization back to client // (2)
-  // note that 'info' not provided in this case. without it, returns only scalar fields
-  //  has something to do with fact that we are returning custom object rathern than pure entity.
-  async createUser(_parent, args, { prisma }, info) {
+  // 1. hash and save new password in database // (1)
+  // 2. return JSON web token for authorization back to client // (2)
+  // 3. note that 'info' not provided as paremeter to prisma.mutation.createUser() in this case.
+  //    - info contains metadata about query passed in from AppMutation.createUser(), which is looking
+  //      for attributes 'token' and/or 'user'.
+  //    - if we relay that selection set into the prisma bindings on server (via prisma.mutation.createUser()),
+  //      we would be asking for 'token' or 'user' elements that the server doesn't know how to resolve.
+  //      Server only knows about properties defined for User via datamodel.prisma.
+  //   -  by removing the 'info' parameter, client.createUser will be able to render anything
+  //      directly returned by its resolver function (AppMutation.createUser()), which do include token and user  // (3)
+  async createUser(_parent, args, { prisma }, _info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
     Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
