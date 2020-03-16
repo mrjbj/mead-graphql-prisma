@@ -52,6 +52,7 @@ export interface Exists {
 }
 
 export interface AppMutation {
+  login: (parent: undefined, args: { email: string, password: string }, context: Context, info: undefined) => Promise<AuthorizationPayload>,
   createUser: (parent: undefined, args: { data: Partial<User> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<AuthorizationPayload>,
   createPost: <T = Post>(parent: undefined, args: { data: Partial<Post> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   createComment: <T = Comment>(parent: undefined, args: { data: Partial<Comment> }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,

@@ -3,8 +3,9 @@
 // rather than having to "await" within each method first  // (1)
 // JSON Web Tokens:
 //  - jsonwebtoken.sign takes {payload} and secret to ensure that payload not altered. // (2)
-//  - {payload} is public information -> anyone can decode it via jwt.decode(token)  // (3)
+//  - jwt.decode{payload} is public information -> anyone can decode it via jwt.decode()  // (3)
 // - jwt.verify() both decodes and verifies that payload not altered  jwt.verify(token, secret) // (4)
+// - jwt.compare(plainText, hashedText) to compare hashed database password to password presented at login
 
 /*
 const token = jwt.sign({ id: 46 }, 'mysecret') // (2)
@@ -13,7 +14,10 @@ const decoded = jwt.decode(token) // (3)
 console.log(decoded)
 const decode2 = jwt.verify(token, 'mysecret')
 console.log(decode2)
+const isMatch = await jwt.compare(password, hashedPassword)
 */
+
+
 
 import { AppMutation, AuthorizationPayload, User } from '../types/types'
 import Assert from 'assert'
@@ -34,6 +38,25 @@ const Mutation: AppMutation = {
   //      Server only knows about properties defined for User via datamodel.prisma.
   //   -  by removing the 'info' parameter, client.createUser will be able to render anything
   //      directly returned by its resolver function (AppMutation.createUser()), which do include token and user  // (3)
+  async login(_parent, args, { prisma }, _info) {
+    Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
+    Assert.strictEqual(typeof args.email, "string", `Assert: [args.email] not a string. [${args.email}]`)
+    Assert.strictEqual(typeof args.password, "string", `Assert: [args.password] not a string. [${args.password}]`)
+
+    const failMsg = 'Login falied.  Username not found or password not match.  Try again.'
+    const user = await prisma.query.user({ where: { email: args.email } }) as User
+    if (!user) {
+      throw SetVerror(undefined, failMsg, { propertyName: "user.email", propertyValue: args.email, log: true })
+    }
+    const isMatch = await bcrypt.compare(args.password, user.password)
+    if (!isMatch) {
+      throw SetVerror(undefined, failMsg, { propertyName: "user.password", propertyValue: user.password, log: true })
+    }
+    return {
+      token: jwt.sign({ id: user.id }, 'thisismysecret'),
+      user: user
+    }
+  },
   async createUser(_parent, args, { prisma }, _info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)

@@ -26,12 +26,31 @@ export const extendError = (err: Error, newProperty: string, value: any): void =
 //       '2nd Level error info...')
 //     throw verror
 
-// need to do it this way so typescript can work with default values in function
-export let SetVerror: (cause: Verror | undefined, message: string, propertyName?: string, propertyValue?: any, name?: string) => Verror
+type SetVerrorOptions = {
+  propertyName?: string,
+  propertyValue?: any,
+  name?: string,
+  log?: boolean
+}
+// need to setup via 'let' do so typescript can work with default values in function
+export let SetVerror: (cause: Verror | undefined, message: string, options?: SetVerrorOptions) => Verror
 
-SetVerror = (cause, message, propertyName = "n/a", propertyValue = "n/a", name = APPLICATION_ERROR) => {
+SetVerror = (cause, message, options = {}) => {
   Assert.equal(typeof message, "string", "parameter [message] not a string")
-  return new Verror({ cause, name, info: { propertyName, propertyValue } }, message)
+
+  // cool way to set default values for options parameter
+  const {
+    name = APPLICATION_ERROR,
+    propertyName = "propertyName",
+    propertyValue = "propertyValue",
+  } = options
+
+  const verror = new Verror({ cause, name, info: { propertyName, propertyValue } }, message)
+
+  if (options.log) {
+    console.log(verror)
+  }
+  return verror
 }
 
 export const jStringify = (object: any, pretty = true) => {

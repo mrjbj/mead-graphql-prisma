@@ -49,6 +49,7 @@ type Query {
   me: User!
 }
 type Mutation {
+  login(email: String!, password: String!): AuthorizationPayload!
   createUser(data: CreateUserInput!): AuthorizationPayload!
   createPost(data: CreatePostInput!): Post!
   createComment(data: CreateCommentInput!): Comment!
