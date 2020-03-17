@@ -7,25 +7,12 @@
 // - jwt.verify() both decodes and verifies that payload not altered  jwt.verify(token, secret) // (4)
 // - jwt.compare(plainText, hashedText) to compare hashed database password to password presented at login
 
-/*
-const token = jwt.sign({ id: 46 }, 'mysecret') // (2)
-console.log(token)
-const decoded = jwt.decode(token) // (3)
-console.log(decoded)
-const decode2 = jwt.verify(token, 'mysecret')
-console.log(decode2)
-const isMatch = await jwt.compare(password, hashedPassword)
-*/
-
-
-
 import { AppMutation, AuthorizationPayload, User } from '../types/types'
 import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-
 
 const Mutation: AppMutation = {
   // 1. hash and save new password in database // (1)
@@ -43,7 +30,7 @@ const Mutation: AppMutation = {
     Assert.strictEqual(typeof args.email, "string", `Assert: [args.email] not a string. [${args.email}]`)
     Assert.strictEqual(typeof args.password, "string", `Assert: [args.password] not a string. [${args.password}]`)
 
-    const failMsg = 'Login falied.  Username not found or password not match.  Try again.'
+    const failMsg = 'Login falied.  Username or password not found or matched.  Try again.'
     const user = await prisma.query.user({ where: { email: args.email } }) as User
     if (!user) {
       throw SetVerror(undefined, failMsg, { propertyName: "user.email", propertyValue: args.email, log: true })
@@ -53,7 +40,7 @@ const Mutation: AppMutation = {
       throw SetVerror(undefined, failMsg, { propertyName: "user.password", propertyValue: user.password, log: true })
     }
     return {
-      token: jwt.sign({ id: user.id }, 'thisismysecret'),
+      token: jwt.sign({ id: user.id }, 'this-is-secret'),
       user: user
     }
   },
@@ -74,7 +61,7 @@ const Mutation: AppMutation = {
     const newUser: User = await prisma.mutation.createUser({ data: { ...args.data, password } }) // (1), (3)
     return {
       user: newUser,
-      token: jwt.sign({ userId: newUser.id }, 'thisissecret')
+      token: jwt.sign({ userId: newUser.id }, 'this-is-secret')
     } as AuthorizationPayload
   },
   async updateUser(_parent, args, { prisma }, info) {
