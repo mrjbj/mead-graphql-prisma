@@ -52,11 +52,17 @@ const server = new GraphQLServer({
     Post,
     Comment
   },
-  context: {
-    db,
-    pubsub,
-    prisma
-  }                                  // (6)
+  context(request) {
+    // obtaining the context object via call to context() method.
+    // yoga will call the context function on each request, passing
+    // in the request object provided by nodejs from the client
+    return {
+      db,
+      pubsub,
+      prisma,
+      request
+    }                                  // (6)
+  }
 })
 
 server.start(() => {

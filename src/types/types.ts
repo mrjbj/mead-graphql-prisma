@@ -1,6 +1,7 @@
-import { PubSub } from "graphql-yoga"
+import { PubSub } from 'graphql-yoga'
 import { Prisma } from 'prisma-binding'
 import { GraphQLResolveInfo } from 'graphql'
+import { ContextParameters } from 'graphql-yoga/dist/types'
 
 export type User = {
   id: string,
@@ -34,7 +35,7 @@ export interface AuthorizationPayload extends Object {
   token: string
 }
 
-export type Context = { db: DB, pubsub: PubSub, prisma: Prisma }
+export type Context = { db: DB, pubsub: PubSub, prisma: Prisma, request: ContextParameters }
 
 export type DynamicObject = {
   [key: string]: any

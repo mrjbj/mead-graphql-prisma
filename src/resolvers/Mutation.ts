@@ -13,6 +13,8 @@ import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { getUserId } from '../util/getUserId'
+import { JWT_SECRET } from '../util/constants'
 
 const Mutation: AppMutation = {
   // 1. hash and save new password in database // (1)
@@ -40,7 +42,7 @@ const Mutation: AppMutation = {
       throw SetVerror(undefined, failMsg, { propertyName: "user.password", propertyValue: user.password, log: true })
     }
     return {
-      token: jwt.sign({ id: user.id }, 'this-is-secret'),
+      token: jwt.sign({ id: user.id }, JWT_SECRET),
       user: user
     }
   },
@@ -61,7 +63,7 @@ const Mutation: AppMutation = {
     const newUser: User = await prisma.mutation.createUser({ data: { ...args.data, password } }) // (1), (3)
     return {
       user: newUser,
-      token: jwt.sign({ userId: newUser.id }, 'this-is-secret')
+      token: jwt.sign({ userId: newUser.id }, JWT_SECRET)
     } as AuthorizationPayload
   },
   async updateUser(_parent, args, { prisma }, info) {
@@ -74,15 +76,18 @@ const Mutation: AppMutation = {
     Assert.strictEqual(typeof args.id, "string", `AssertError: [args.id] not a string. [${args.id}]`)
     return prisma.mutation.deleteUser({ where: { id: args.id } }, info)
   },
-  async createPost(_parent, args, { prisma }, info) {
+  async createPost(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.title, "string", `AssertError: [args.data.title] not a string. [${args.data.title}]`)
+
+
+    const userId = getUserId(request)
     return prisma.mutation.createPost({
       data: {
         title: args.data.title,
         body: args.data.body,
         published: args.data.published,
-        author: { connect: { id: args.data.author } }
+        author: { connect: { id: userId } }
       }
     }, info)
   },
