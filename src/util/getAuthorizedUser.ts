@@ -1,6 +1,5 @@
-import { SetVerror, jStringify } from './applicationError'
+import { SetVerror } from './applicationError'
 import jwt from 'jsonwebtoken'
-import Assert from 'assert'
 import { ContextParameters } from 'graphql-yoga/dist/types'
 import { JWT_SECRET } from './constants'
 
@@ -10,9 +9,7 @@ export type AppToken = {
 }
 
 //
-export const getUserId = (request: ContextParameters) => {
-  Assert.equal(typeof request.request.headers.authorization, "string", `request.headers.authorization not a string: [${jStringify(request.request.headers.authorization)}]`)
-
+export const getAuthorizedUser = (request: ContextParameters) => {
   const header = request.request.headers.authorization
 
   if (!header) {

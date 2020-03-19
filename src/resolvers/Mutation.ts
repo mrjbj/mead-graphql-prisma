@@ -13,7 +13,7 @@ import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { getUserId } from '../util/getUserId'
+import { getAuthorizedUser } from '../util/getAuthorizedUser'
 import { JWT_SECRET } from '../util/constants'
 
 const Mutation: AppMutation = {
@@ -50,7 +50,6 @@ const Mutation: AppMutation = {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
     Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
-    Assert.strictEqual(typeof args.data.password, "string", `Assert: [args.data.password] not a string. [${args.data.password}]`)
 
     if (!args.data.password) {
       throw SetVerror(undefined, `password is required.`)
@@ -66,22 +65,22 @@ const Mutation: AppMutation = {
       token: jwt.sign({ userId: newUser.id }, JWT_SECRET)
     } as AuthorizationPayload
   },
-  async updateUser(_parent, args, { prisma }, info) {
+  async updateUser(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
-    Assert.strictEqual(typeof args.id, "string", `AssertError: [args.id] not a string. [${args.id}]`)
-    return prisma.mutation.updateUser({ where: { id: args.id }, data: args.data }, info)
+    const userId = getAuthorizedUser(request)
+    return prisma.mutation.updateUser({ where: { id: userId }, data: args.data }, info)
   },
-  async deleteUser(_parent, args, { prisma }, info) {
+  async deleteUser(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
-    Assert.strictEqual(typeof args.id, "string", `AssertError: [args.id] not a string. [${args.id}]`)
-    return prisma.mutation.deleteUser({ where: { id: args.id } }, info)
+    const userId = getAuthorizedUser(request)
+    return prisma.mutation.deleteUser({ where: { id: userId } }, info)
   },
   async createPost(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.title, "string", `AssertError: [args.data.title] not a string. [${args.data.title}]`)
 
 
-    const userId = getUserId(request)
+    const userId = getAuthorizedUser(request)
     return prisma.mutation.createPost({
       data: {
         title: args.data.title,
@@ -91,14 +90,20 @@ const Mutation: AppMutation = {
       }
     }, info)
   },
+  async  deletePost(_parent, args, { prisma, request }, info) {
+    Assert.strictEqual(typeof args.id, "string", `AssertionError: [args.id] not a string. [${args.id}]`)
+    const authenticatedUserId = getAuthorizedUser(request)
+    const postOwnedByAuthenticatedUser = await prisma.exists.Post({ id: args.id, author: { id: authenticatedUserId } })
+    if (!postOwnedByAuthenticatedUser) {
+      throw SetVerror(undefined, `You can only delete your own posts.`)
+    }
+    return prisma.mutation.deletePost({ where: { id: args.id } }, info)
+  },
   async updatePost(_parent, args, { prisma }, info) {
     return prisma.mutation.updatePost({
       where: { id: args.id },
       data: args.data
     }, info)
-  },
-  deletePost(_parent, args, { prisma }, info) {
-    return prisma.mutation.deletePost({ where: { id: args.id } }, info)
   },
   async createComment(_parent, args, { prisma }, info) {
     return prisma.mutation.createComment({
