@@ -1,4 +1,4 @@
-import { SetVerror } from './applicationError'
+import { SetVerror, jStringify } from './applicationError'
 import jwt from 'jsonwebtoken'
 import { ContextParameters } from 'graphql-yoga/dist/types'
 import { JWT_SECRET } from './constants'
@@ -8,8 +8,11 @@ export type AppToken = {
   iat: number
 }
 
-//
-export const getAuthorizedUser = (request: ContextParameters) => {
+// this is a synchronous function
+// if error thrown (either by !header or by jwt.verify()),
+// it will not be caught locally here but bubbled up to mutation that called it.
+// the mutation will, in turn, bubble up the error to gql server, which will report it back
+export const getCurrentUser = (request: ContextParameters) => {
   const header = request.request.headers.authorization
 
   if (!header) {

@@ -13,7 +13,7 @@ import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { getAuthorizedUser } from '../util/getAuthorizedUser'
+import { getCurrentUser } from '../util/getCurrentUser'
 import { JWT_SECRET } from '../util/constants'
 
 const Mutation: AppMutation = {
@@ -67,20 +67,19 @@ const Mutation: AppMutation = {
   },
   async updateUser(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
-    const userId = getAuthorizedUser(request)
+    const userId = getCurrentUser(request)
     return prisma.mutation.updateUser({ where: { id: userId }, data: args.data }, info)
   },
-  async deleteUser(_parent, args, { prisma, request }, info) {
+  async deleteUser(_parent, _args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
-    const userId = getAuthorizedUser(request)
+    const userId = getCurrentUser(request)
     return prisma.mutation.deleteUser({ where: { id: userId } }, info)
   },
   async createPost(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.title, "string", `AssertError: [args.data.title] not a string. [${args.data.title}]`)
 
-
-    const userId = getAuthorizedUser(request)
+    const userId = getCurrentUser(request)
     return prisma.mutation.createPost({
       data: {
         title: args.data.title,
@@ -92,35 +91,54 @@ const Mutation: AppMutation = {
   },
   async  deletePost(_parent, args, { prisma, request }, info) {
     Assert.strictEqual(typeof args.id, "string", `AssertionError: [args.id] not a string. [${args.id}]`)
-    const authenticatedUserId = getAuthorizedUser(request)
+    const authenticatedUserId = getCurrentUser(request)
     const postOwnedByAuthenticatedUser = await prisma.exists.Post({ id: args.id, author: { id: authenticatedUserId } })
     if (!postOwnedByAuthenticatedUser) {
       throw SetVerror(undefined, `You can only delete your own posts.`)
     }
     return prisma.mutation.deletePost({ where: { id: args.id } }, info)
   },
-  async updatePost(_parent, args, { prisma }, info) {
+  async updatePost(_parent, args, { prisma, request }, info) {
+    Assert.strictEqual(typeof args.id, "string", `AssertionError: [args.id] not a string. [${args.id}]`)
+    const currentUserId = getCurrentUser(request)
+    const postOwnedByCurrentUser = await prisma.exists.Post({ id: args.id, author: { id: currentUserId } })
+    if (!postOwnedByCurrentUser) {
+      throw SetVerror(undefined, `You cannot update posts created by other users.`)
+    }
     return prisma.mutation.updatePost({
       where: { id: args.id },
       data: args.data
     }, info)
   },
-  async createComment(_parent, args, { prisma }, info) {
+  async createComment(_parent, args, { prisma, request }, info) {
+    const currentUserId = getCurrentUser(request)
+
     return prisma.mutation.createComment({
       data: {
         text: args.data.text,
         post: { connect: { id: args.data.post } },
-        author: { connect: { id: args.data.author } }
+        author: { connect: { id: currentUserId } }
       }
     }, info)
   },
-  async updateComment(_parent, args, { prisma }, info) {
+  async updateComment(_parent, args, { prisma, request }, info) {
+    const currentUserId = getCurrentUser(request)
+    const isOwnedByCurrentUser = await prisma.exists.Comment({ id: args.id, author: { id: currentUserId } })
+
+    if (!isOwnedByCurrentUser) {
+      throw SetVerror(undefined, `You can only update your own comments.`)
+    }
     return prisma.mutation.updateComment({
       data: args.data,
       where: { id: args.id }
     }, info)
   },
-  async deleteComment(_parent, args, { prisma }, info) {
+  async deleteComment(_parent, args, { prisma, request }, info) {
+    const currentUserId = getCurrentUser(request)
+    const isOwnedByCurrentuser = await prisma.exists.Comment({ id: args.id, author: { id: currentUserId } })
+    if (!isOwnedByCurrentuser) {
+      throw SetVerror(undefined, `You can only delete your own comments.`)
+    }
     return prisma.mutation.deleteComment({ where: { id: args.id } }, info)
   }
 }
