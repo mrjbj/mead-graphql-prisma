@@ -11,10 +11,12 @@
 //  - GraphQL resolver runtime is promise-aware. If resolver returns a promise,
 //    graphql will wait for it to resolve, so it's okay to return
 //    a promise from resolver function without await   (1)
-import { DynamicObject, AppQuery } from '../types/types'
+import { DynamicObject, AppQuery, Post } from '../types/types'
 import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
-import { jStringify } from '../util/applicationError'
+import { jStringify, SetVerror } from '../util/applicationError'
+import { getCurrentUser } from '../util/getCurrentUser'
+import { Query } from '../types/graphqlBindings'
 
 const Query: AppQuery = {
   async users(_parent, args, { prisma }, info) {
@@ -43,6 +45,26 @@ const Query: AppQuery = {
       queryArgs.where = { text_contains: args!.query }
     }
     return prisma.query.comments(queryArgs, info)
+  },
+  async me(_parent, _args, { prisma, request }, info) {
+    const currentUser = getCurrentUser(request)
+    return await prisma.query.user({ where: { id: currentUser } }, info)
+  },
+  // if post is published, then return since access to all,
+  // if post is not published, then return only if current user is author
+  async post(_parent, args, { prisma, request }, info) {
+    const currentUser = getCurrentUser(request, false)
+    const post = await prisma.query.post({ where: { id: args.id } }, info) as Post
+    if (!post) {
+      throw SetVerror(undefined, `Post not found.`)
+    }
+    if (post.published) {
+      return post
+    } else if (currentUser !== post.author.id) {
+      throw SetVerror(undefined, `Please login first.`)
+    } else {
+      return post
+    }
   }
 }
 
