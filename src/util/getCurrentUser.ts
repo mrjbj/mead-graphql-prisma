@@ -2,10 +2,11 @@ import { SetVerror } from './applicationError'
 import jwt from 'jsonwebtoken'
 import { ContextParameters } from 'graphql-yoga/dist/types'
 import { JWT_SECRET } from './constants'
+import Assert from 'assert'
 
 export type AppToken = {
-  id: string,
-  iat: number
+  userId: string,
+  iat?: number
 }
 
 // this is a synchronous function
@@ -24,7 +25,8 @@ export const getCurrentUser = (request: ContextParameters, authRequired = true) 
     }
     const token = header.replace('Bearer ', '')
     const decodedToken = jwt.verify(token, JWT_SECRET) as AppToken
-    returner = decodedToken.id
+    returner = decodedToken.userId
+    Assert.strictEqual(typeof returner, "string", `decodedToken.userId is not a string: [${decodedToken.userId}]`)
   }
   console.log(`Authorized user: [${returner}]`)
   return returner

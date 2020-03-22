@@ -25,7 +25,7 @@ const Query: AppQuery = {
     const queryArgs: DynamicObject = {}
     // != means both 'null' and 'undefined' resolve to false, so query must contain something.
     if (args!.query != null) {
-      queryArgs.where.OR = [{ name_contains: args!.query }, { email_contains: args!.query }]
+      queryArgs.where.OR = [{ name_contains: args!.query }]
     }
     return prisma.query.users(queryArgs, info) // (1)
   },

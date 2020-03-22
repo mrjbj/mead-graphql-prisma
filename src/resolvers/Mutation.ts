@@ -13,7 +13,7 @@ import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { getCurrentUser } from '../util/getCurrentUser'
+import { getCurrentUser, AppToken } from '../util/getCurrentUser'
 import { JWT_SECRET } from '../util/constants'
 
 const Mutation: AppMutation = {
@@ -42,7 +42,7 @@ const Mutation: AppMutation = {
       throw SetVerror(undefined, failMsg, { propertyName: "user.password", propertyValue: user.password, log: true })
     }
     return {
-      token: jwt.sign({ id: user.id }, JWT_SECRET),
+      token: jwt.sign({ userId: user.id } as AppToken, JWT_SECRET),
       user: user
     }
   },
@@ -62,7 +62,7 @@ const Mutation: AppMutation = {
     const newUser: User = await prisma.mutation.createUser({ data: { ...args.data, password } }) // (1), (3)
     return {
       user: newUser,
-      token: jwt.sign({ userId: newUser.id }, JWT_SECRET)
+      token: jwt.sign({ userId: newUser.id } as AppToken, JWT_SECRET)
     } as AuthorizationPayload
   },
   async updateUser(_parent, args, { prisma, request }, info) {
@@ -98,21 +98,36 @@ const Mutation: AppMutation = {
     }
     return prisma.mutation.deletePost({ where: { id: args.id } }, info)
   },
+  // must be authenticated and author of post to be updated.
+  // if post is going from published to unpublished, then delete any associated comments.
   async updatePost(_parent, args, { prisma, request }, info) {
     Assert.strictEqual(typeof args.id, "string", `AssertionError: [args.id] not a string. [${args.id}]`)
     const currentUserId = getCurrentUser(request)
+    const isPublished = await prisma.exists.Post({ id: args.id, published: true })
     const postOwnedByCurrentUser = await prisma.exists.Post({ id: args.id, author: { id: currentUserId } })
     if (!postOwnedByCurrentUser) {
       throw SetVerror(undefined, `You cannot update posts created by other users.`)
+    }
+    if (isPublished && !args.data.published) {
+      // is owned by current user and going from published to unpublished.
+      const countDeleted = await prisma.mutation.deleteManyComments({
+        where: { post: { id: args.id } }
+      })
+      console.log(`Comments deleted from unpublishing: [${countDeleted}]`)
     }
     return prisma.mutation.updatePost({
       where: { id: args.id },
       data: args.data
     }, info)
   },
+  // must be authenticated
+  // can only create comments on posts in published status.
   async createComment(_parent, args, { prisma, request }, info) {
     const currentUserId = getCurrentUser(request)
-
+    const post = await prisma.query.post({ where: { id: args.data.post } })
+    if (!post.published) {
+      throw SetVerror(undefined, `Comments not allowed on unpublished posts.`)
+    }
     return prisma.mutation.createComment({
       data: {
         text: args.data.text,
