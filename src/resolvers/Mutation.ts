@@ -12,9 +12,8 @@ import Assert from 'assert'
 import { Prisma } from 'prisma-binding'
 import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { getCurrentUser, AppToken } from '../util/getCurrentUser'
-import { JWT_SECRET } from '../util/constants'
+import { getCurrentUser } from '../util/getCurrentUser'
+import { generateToken } from '../util/generateToken'
 
 const Mutation: AppMutation = {
   // 1. hash and save new password in database // (1)
@@ -42,7 +41,7 @@ const Mutation: AppMutation = {
       throw SetVerror(undefined, failMsg, { propertyName: "user.password", propertyValue: user.password, log: true })
     }
     return {
-      token: jwt.sign({ userId: user.id } as AppToken, JWT_SECRET),
+      token: generateToken(user.id),
       user: user
     }
   },
@@ -62,7 +61,7 @@ const Mutation: AppMutation = {
     const newUser: User = await prisma.mutation.createUser({ data: { ...args.data, password } }) // (1), (3)
     return {
       user: newUser,
-      token: jwt.sign({ userId: newUser.id } as AppToken, JWT_SECRET)
+      token: generateToken(newUser.id)
     } as AuthorizationPayload
   },
   async updateUser(_parent, args, { prisma, request }, info) {
