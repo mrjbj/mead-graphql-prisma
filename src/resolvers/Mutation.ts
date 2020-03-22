@@ -14,6 +14,7 @@ import { SetVerror } from '../util/applicationError'
 import bcrypt from 'bcryptjs'
 import { getCurrentUser } from '../util/getCurrentUser'
 import { generateToken } from '../util/generateToken'
+import { hashPassword } from '../util/hashPassword'
 
 const Mutation: AppMutation = {
   // 1. hash and save new password in database // (1)
@@ -49,15 +50,7 @@ const Mutation: AppMutation = {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     Assert.strictEqual(typeof args.data.email, "string", `Assert: [args.data.email] not a string. [${args.data.email}]`)
     Assert.strictEqual(typeof args.data.name, "string", `Assert: [args.data.name] not a string. [${args.data.email}]`)
-
-    if (!args.data.password) {
-      throw SetVerror(undefined, `password is required.`)
-    } else {
-      if (args.data.password.length < 8) {
-        throw SetVerror(undefined, `Password length must be 8 characters or more.`)
-      }
-    }
-    const password = bcrypt.hashSync(args.data.password)
+    const password = hashPassword(args.data.password!)
     const newUser: User = await prisma.mutation.createUser({ data: { ...args.data, password } }) // (1), (3)
     return {
       user: newUser,
@@ -67,6 +60,9 @@ const Mutation: AppMutation = {
   async updateUser(_parent, args, { prisma, request }, info) {
     Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
     const userId = getCurrentUser(request)
+    if (args.data.password) {
+      args.data.password = hashPassword(args.data.password)
+    }
     return prisma.mutation.updateUser({ where: { id: userId }, data: args.data }, info)
   },
   async deleteUser(_parent, _args, { prisma, request }, info) {
