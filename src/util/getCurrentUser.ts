@@ -2,7 +2,6 @@ import { SetVerror } from './applicationError'
 import jwt from 'jsonwebtoken'
 import { ContextParameters } from 'graphql-yoga/dist/types'
 import { JWT_SECRET } from './constants'
-import Assert from 'assert'
 
 export type AppToken = {
   userId: string,
@@ -16,8 +15,9 @@ export type AppToken = {
 //
 // if authRequired is false, then don't throw error so caller can continue on if desired.
 export const getCurrentUser = (request: ContextParameters, authRequired = true) => {
-  const header = request.request.headers.authorization
-  let returner = null
+  // subscriptions have authorization token stored on connection.context
+  const header = request.request ? request.request.headers.authorization : request.connection.context.Authorization
+  let returner = null;
 
   if (authRequired) {
     if (!header) {
@@ -25,8 +25,10 @@ export const getCurrentUser = (request: ContextParameters, authRequired = true) 
     }
     const token = header.replace('Bearer ', '')
     const decodedToken = jwt.verify(token, JWT_SECRET) as AppToken
+    if (typeof decodedToken.userId !== "string") {
+      throw SetVerror(undefined, `Invalid authorization token. Token parsed but userId not found`)
+    }
     returner = decodedToken.userId
-    Assert.strictEqual(typeof returner, "string", `decodedToken.userId is not a string: [${decodedToken.userId}]`)
   }
   console.log(`Authorized user: [${returner}]`)
   return returner

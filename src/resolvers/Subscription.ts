@@ -1,4 +1,5 @@
 import { AppSubscription } from '../types/types'
+import { getCurrentUser } from '../util/getCurrentUser'
 // ------------
 // - Subscription is reserved type name   (e.g. type Subscription{<subscription items>})   // (0)
 // - Like Queries, Subscription items are declared in schema as methods,
@@ -23,6 +24,14 @@ const Subscription: AppSubscription = {
     async subscribe(_parent, args, { prisma }, info) {
       return prisma.subscription.post({
         where: { node: { published: args.published } }
+      }, info)
+    }
+  },
+  myPost: {
+    async subscribe(_parent, _args, { prisma, request }, info) {
+      const currentUser = getCurrentUser(request)
+      return prisma.subscription.post({
+        where: { node: { author: { id: currentUser } } }
       }, info)
     }
   }

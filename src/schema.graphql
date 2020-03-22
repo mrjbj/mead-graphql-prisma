@@ -67,6 +67,7 @@ type Mutation {
 type Subscription {
   comment(postId: ID!): CommentSubscriptionPayload!
   post(published: Boolean): PostSubscriptionPayload!
+  myPost: PostSubscriptionPayload!
 }
 type AuthorizationPayload {
   token: String!

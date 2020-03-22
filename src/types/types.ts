@@ -88,6 +88,7 @@ export interface AppQuery {
 export interface AppSubscription {
   comment: { subscribe<T = Comment>(parent: undefined, args: { postId: string }, context: Context, info?: GraphQLResolveInfo | string): Promise<AsyncIterator<T | null>> }
   post: { subscribe<T = Post>(parent: undefined, args: { published: boolean }, context: Context, info?: GraphQLResolveInfo | string): Promise<AsyncIterator<T | null>> }
+  myPost: { subscribe<T = Post>(parent: undefined, args: { author: string }, context: Context, info?: GraphQLResolveInfo | string): Promise<AsyncIterator<T | null>> }
   // user: <T = UserSubscriptionPayload | null>(args: { where?: UserSubscriptionWhereInput | null }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<AsyncIterator<T | null>>,
   // post: <T = PostSubscriptionPayload | null>(args: { where?: PostSubscriptionWhereInput | null }, info?: GraphQLResolveInfo | string, options?: Options) => Promise<AsyncIterator<T | null>>,
 }
