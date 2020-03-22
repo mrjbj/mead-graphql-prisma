@@ -72,6 +72,7 @@ export interface AppQuery {
   comments: <T = Array<Comment | null>>(parent: undefined, args: { query: string } | null, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,
   post: (parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<Post>,
   me: (parent: undefined, args: undefined, context: Context, info?: GraphQLResolveInfo | string) => Promise<User>,
+  myPosts: (parent: undefined, args: { query: string } | null, context: Context, info?: GraphQLResolveInfo | string) => Promise<Array<Post | null>>
 }
 
 export interface AppSubscription {

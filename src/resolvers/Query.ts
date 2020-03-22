@@ -25,17 +25,14 @@ const Query: AppQuery = {
     const queryArgs: DynamicObject = {}
     // != means both 'null' and 'undefined' resolve to false, so query must contain something.
     if (args!.query != null) {
-      // api expects {where: {name_contains: "value"}}
-      queryArgs.where = {
-        OR: [{ name_contains: args!.query }, { email_contains: args!.query }]
-      }
+      queryArgs.where.OR = [{ name_contains: args!.query }, { email_contains: args!.query }]
     }
     return prisma.query.users(queryArgs, info) // (1)
   },
   async posts(_parent, args, { prisma }, info) {
-    const queryArgs: DynamicObject = {}
+    const queryArgs: DynamicObject = { where: { published: true } }
     if (args!.query != null) {
-      queryArgs.where = { OR: [{ title_contains: args!.query }, { body_contains: args!.query }] }
+      queryArgs.where.OR = [{ title_contains: args!.query }, { body_contains: args!.query }]
     }
     return prisma.query.posts(queryArgs, info)
   },
@@ -45,10 +42,6 @@ const Query: AppQuery = {
       queryArgs.where = { text_contains: args!.query }
     }
     return prisma.query.comments(queryArgs, info)
-  },
-  async me(_parent, _args, { prisma, request }, info) {
-    const currentUser = getCurrentUser(request)
-    return await prisma.query.user({ where: { id: currentUser } }, info)
   },
   // if post is published, then return since access to all,
   // if post is not published, then return only if current user is author
@@ -65,6 +58,18 @@ const Query: AppQuery = {
     } else {
       return post
     }
+  },
+  async me(_parent, _args, { prisma, request }, info) {
+    const currentUser = getCurrentUser(request)
+    return await prisma.query.user({ where: { id: currentUser } }, info)
+  },
+  async myPosts(_parent, args, { prisma, request }, info) {
+    const currentUser = getCurrentUser(request)
+    const queryArgs: DynamicObject = { where: { author: { id: currentUser } } }
+    if (args!.query != null) {
+      queryArgs.where.OR = [{ title_contains: args!.query }, { body_contains: args!.query }]
+    }
+    return prisma.query.posts(queryArgs, info)
   }
 }
 

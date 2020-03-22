@@ -1,4 +1,4 @@
-import { SetVerror, jStringify } from './applicationError'
+import { SetVerror } from './applicationError'
 import jwt from 'jsonwebtoken'
 import { ContextParameters } from 'graphql-yoga/dist/types'
 import { JWT_SECRET } from './constants'
