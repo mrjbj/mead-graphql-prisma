@@ -9,6 +9,17 @@ export type User = {
   email: string,
   password: string
 }
+export interface UserResolver {
+  email: {
+    fragment: string,
+    resolve(parent: User, args: undefined, context: Context, info?: GraphQLResolveInfo | string): string | null,
+  },
+  posts: {
+    fragment: string,
+    resolve(parent: User, args: undefined, context: Context, info?: GraphQLResolveInfo | string): Promise<Array<Post | null>>
+  }
+}
+
 export type Post = {
   id: string,
   title: string,
@@ -64,7 +75,6 @@ export interface AppMutation {
   deletePost: <T = Post | null>(parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
   deleteComment: <T = Comment | null>(parent: undefined, args: { id: string }, context: Context, info?: GraphQLResolveInfo | string) => Promise<T | null>,
 }
-
 
 export interface AppQuery {
   users: <T = Array<User | null>>(parent: undefined, args: { query: string } | null, context: Context, info?: GraphQLResolveInfo | string) => Promise<T>,

@@ -25,12 +25,7 @@ import { GraphQLServer, PubSub } from 'graphql-yoga'
 import { db } from './db'
 import { watchSchemaFiles } from './util/watchSchemaFiles'
 import { setupGlobalErrorHandler } from './util/errorhander'
-import Query from './resolvers/Query'
-import Mutation from './resolvers/Mutation'
-import Subscription from './resolvers/Subscription'
-import User from './resolvers/User'
-import Post from './resolvers/Post'
-import Comment from './resolvers/Comment'
+import { resolvers, fragmentReplacements } from './resolvers/index'
 import { prisma } from './prisma'
 
 // import './prisma'
@@ -42,20 +37,14 @@ setupGlobalErrorHandler()
 
 const pubsub = new PubSub()
 
+// obtaining the context object via call to context() method.
+// yoga will call the context function on each request, passing
+// in the request object provided by nodejs from the client // (2)
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',   // (1)
-  resolvers: {
-    Query,                            // (2)
-    Mutation,                         // (3)
-    Subscription,                     // (4)
-    User,                             // (5)
-    Post,
-    Comment
-  },
-  context(request) {
-    // obtaining the context object via call to context() method.
-    // yoga will call the context function on each request, passing
-    // in the request object provided by nodejs from the client
+  resolvers,
+  fragmentReplacements,
+  context(request) {                  // (2)
     return {
       db,
       pubsub,

@@ -10,11 +10,13 @@
 //    for get-schema without having to know the configured secret.
 
 import { Prisma } from 'prisma-binding'
+import { fragmentReplacements } from './resolvers/index'
 
 export const prisma = new Prisma({
   typeDefs: './src/generated/prisma.graphql',  // (3)
   endpoint: 'http://localhost:4466',
-  secret: 'thisismysupersecrettextforreals'
+  secret: 'thisismysupersecrettextforreals',
+  fragmentReplacements
 })
 
 /* prisma.query.users(undefined, '{id name  posts {id title comments{text } } }').then((data: any) => {
