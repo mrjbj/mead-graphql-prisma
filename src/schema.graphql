@@ -57,7 +57,7 @@ type Query {
   ): [Comment!]!
   post(id: String!): Post!
   me: User!
-  myPosts(query: String): [Post!]!
+  myPosts(query: String, first: Int, skip: Int, after: String, orderBy: PostOrderByInput): [Post!]!
 }
 type Mutation {
   login(email: String!, password: String!): AuthorizationPayload!

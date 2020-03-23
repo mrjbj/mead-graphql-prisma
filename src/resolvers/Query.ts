@@ -81,7 +81,13 @@ const Query: AppQuery = {
   },
   async myPosts(_parent, args, { prisma, request }, info) {
     const currentUser = getCurrentUser(request)
-    const queryArgs: DynamicObject = { where: { author: { id: currentUser } } }
+    const queryArgs: DynamicObject = {
+      first: args!.first,
+      after: args!.after,
+      skip: args!.skip,
+      orderBy: args!.orderBy,
+      where: { author: { id: currentUser } }
+    }
     if (args!.query != null) {
       queryArgs.where.OR = [{ title_contains: args!.query }, { body_contains: args!.query }]
     }
