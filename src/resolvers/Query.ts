@@ -22,22 +22,35 @@ const Query: AppQuery = {
   async users(_parent, args, { prisma }, info) {
     Assert(prisma instanceof Prisma, `Assert: parameter [prisma] is not an object: [${jStringify(prisma)}]`)
 
-    const queryArgs: DynamicObject = {}
-    // != means both 'null' and 'undefined' resolve to false, so query must contain something.
+    const queryArgs: DynamicObject = {
+      first: args!.first,
+      skip: args!.skip,
+      after: args!.after
+    }
+    // != means both 'null' and 'undefined' resolve to false, so query must contain something that's not null.
     if (args!.query != null) {
       queryArgs.where.OR = [{ name_contains: args!.query }]
     }
     return prisma.query.users(queryArgs, info) // (1)
   },
   async posts(_parent, args, { prisma }, info) {
-    const queryArgs: DynamicObject = { where: { published: true } }
+    const queryArgs: DynamicObject = {
+      first: args!.first,
+      skip: args!.skip,
+      after: args!.after,
+      where: { published: true }
+    }
     if (args!.query != null) {
       queryArgs.where.OR = [{ title_contains: args!.query }, { body_contains: args!.query }]
     }
     return prisma.query.posts(queryArgs, info)
   },
   async comments(_parent, args, { prisma }, info) {
-    const queryArgs: DynamicObject = {}
+    const queryArgs: DynamicObject = {
+      first: args!.first,
+      skip: args!.skip,
+      after: args!.after
+    }
     if (args!.query != null) {
       queryArgs.where = { text_contains: args!.query }
     }
