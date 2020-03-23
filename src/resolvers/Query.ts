@@ -25,7 +25,8 @@ const Query: AppQuery = {
     const queryArgs: DynamicObject = {
       first: args!.first,
       skip: args!.skip,
-      after: args!.after
+      after: args!.after,
+      orderBy: args!.orderBy
     }
     // != means both 'null' and 'undefined' resolve to false, so query must contain something that's not null.
     if (args!.query != null) {
@@ -38,6 +39,7 @@ const Query: AppQuery = {
       first: args!.first,
       skip: args!.skip,
       after: args!.after,
+      orderBy: args!.orderBy,
       where: { published: true }
     }
     if (args!.query != null) {
@@ -49,7 +51,8 @@ const Query: AppQuery = {
     const queryArgs: DynamicObject = {
       first: args!.first,
       skip: args!.skip,
-      after: args!.after
+      after: args!.after,
+      orderBy: args!.orderBy
     }
     if (args!.query != null) {
       queryArgs.where = { text_contains: args!.query }

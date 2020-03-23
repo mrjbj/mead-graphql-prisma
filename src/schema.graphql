@@ -42,10 +42,19 @@
 #   -  Channel name used in Subscription{} implementation === channel name triggered
 #      in publish() call from mutation.
 
+#  below is from graphql-tools which allows import fo types from another file
+# import UserOrderByInput, PostOrderByInput, CommentOrderByInput  from './generated/prisma.graphql'
+
 type Query {
-  users(query: String, first: Int, skip: Int, after: String): [User!]!
-  posts(query: String, first: Int, skip: Int, after: String): [Post!]!
-  comments(query: String, first: Int, skip: Int, after: String): [Comment!]!
+  users(query: String, first: Int, skip: Int, after: String, orderBy: UserOrderByInput): [User!]!
+  posts(query: String, first: Int, skip: Int, after: String, orderBy: PostOrderByInput): [Post!]!
+  comments(
+    query: String
+    first: Int
+    skip: Int
+    after: String
+    orderBy: CommentOrderByInput
+  ): [Comment!]!
   post(id: String!): Post!
   me: User!
   myPosts(query: String): [Post!]!
