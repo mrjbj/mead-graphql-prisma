@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "env-cmd -f ./config/dev.env ts-node-dev --clear  -- ./src/index.ts",
-    "get-schema": "graphql get-schema -p prisma",
+    "get-schema": "graphql get-schema -p prisma --dotenv config/dev.env",
     "start": "node -r ts-node/register/transpile-only ./src/index.ts"
   },
   "keywords": [],
