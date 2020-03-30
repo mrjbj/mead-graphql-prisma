@@ -1,23 +1,23 @@
 
-import { Comment, DB, Post, User } from './types/types'
+import { Comment, DB, User } from './types/types'
 
 let users: User[] = [{
-    id: '10',
-    name: 'Jason',
-    email: 'jason@brucejones.biz',
-    password: 'GooberPatrol'
+  id: '10',
+  name: 'Jason',
+  email: 'jason@brucejones.biz',
+  password: 'GooberPatrol'
 }, {
-    id: '20',
-    name: 'Ana',
-    email: 'ana@anajones.com',
-    password: 'GooberPatrol'
+  id: '20',
+  name: 'Ana',
+  email: 'ana@anajones.com',
+  password: 'GooberPatrol'
 }, {
-    id: '30',
-    name: 'Roark',
-    email: 'rbj250@nyu.edu',
-    password: "GooberPatrol"
+  id: '30',
+  name: 'Roark',
+  email: 'rbj250@nyu.edu',
+  password: "GooberPatrol"
 }]
-
+/*
 let posts: Post[] = [{
     id: '1',
     title: 'Should we believe in God?',
@@ -44,36 +44,37 @@ let posts: Post[] = [{
     author: '10'
 }
 ]
+*/
 let comments: Comment[] = [{
-    id: '100',
-    text: 'I really enjoyed this article',
-    author: '10',
-    post: '1'
+  id: '100',
+  text: 'I really enjoyed this article',
+  author: '10',
+  post: '1'
 }, {
-    id: '200',
-    text: 'I believe in God, too!',
-    author: '20',
-    post: '1'
+  id: '200',
+  text: 'I believe in God, too!',
+  author: '20',
+  post: '1'
 }, {
-    id: '300',
-    text: 'Party on, dude!',
-    author: '20',
-    post: '3'
+  id: '300',
+  text: 'Party on, dude!',
+  author: '20',
+  post: '3'
 }, {
-    id: '400',
-    text: 'Saving money should be taught from early on',
-    author: '10',
-    post: '2'
+  id: '400',
+  text: 'Saving money should be taught from early on',
+  author: '10',
+  post: '2'
 }, {
-    id: '500',
-    text: 'Wish I had known this all along!',
-    author: '30',
-    post: '2'
+  id: '500',
+  text: 'Wish I had known this all along!',
+  author: '30',
+  post: '2'
 }
 ]
 
 export const db: DB = {
-    users,
-    posts,
-    comments
+  users,
+  // posts,
+  comments
 }

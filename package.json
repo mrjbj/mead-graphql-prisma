@@ -7,7 +7,13 @@
     "dev": "env-cmd -f ./config/dev.env ts-node-dev --clear  -- ./src/index.ts",
     "get-schema": "graphql get-schema -p prisma --dotenv config/dev.env",
     "start": "node -r ts-node/register/transpile-only ./src/index.ts",
-    "test": "jest --watch"
+    "test": "env-cmd -f ./config/test.env  jest --watch"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "globalSetup": "./tests/jest/globalSetup.ts",
+    "globalTeardown": "./tests/jest/globalTeardown.ts"
   },
   "keywords": [],
   "author": "",

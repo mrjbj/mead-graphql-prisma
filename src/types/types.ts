@@ -36,7 +36,7 @@ export type Comment = {
 
 export type DB = {
   users: User[],
-  posts: Post[],
+  // posts: Post[],
   comments: Comment[]
 }
 
