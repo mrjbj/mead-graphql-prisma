@@ -1,59 +1,40 @@
 {
-  "ignorePatterns": ["node_modules/", "dist", "coverage"],
-  "env": {
-    "browser": true,
-    "es6": true,
-    "node": true
-  },
-  "extends": [
-    "airbnb",
-    "plugin:react/recommended", // Uses the recommended rules from @eslint-plugin-react
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended", // Uses the recommended rules from the @typescript-eslint/eslint-plugin
-    "plugin:prettier/recommended", // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.    "eslint:recommended",
-    "prettier/@typescript-eslint" // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
-  ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
-  },
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module"
-  },
-  "plugins": ["@typescript-eslint"],
-  "rules": {
-    "array-bracket-spacing": "warn",
-    "arrow-parens": "off",
-    "arrow-spacing": "warn",
-    "block-scoped-var": "error",
-    "block-spacing": "warn",
-    "camelcase": "warn",
-    "comma-dangle": "warn",
-    "comma-spacing": "warn",
-    "constructor-super": "warn",
-    "curly": "warn",
-    "default-case": "warn",
-    "eol-last": "warn",
-    "func-call-spacing": "warn",
-    "indent": ["error", 2],
-    "key-spacing": "warn",
-    "keyword-spacing": "warn",
-    "linebreak-style": ["error", "unix"],
-    "multiline-comment-style": "warn",
-    "new-cap": "warn",
-    "new-parens": "warn",
-    "newline-per-chained-call": "warn",
-    "no-dupe-args": "warn",
-    "no-dupe-keys": "warn",
-    "no-duplicate-case": "warn",
-    "no-duplicate-imports": "warn",
-    "no-extra-semi": "warn",
-    "no-irregular-whitespace": "warn",
-    "no-magic-numbers": "error",
-    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
-    "require-await": "error",
-    "semi": ["error", "never"]
-  }
+    "ignorePatterns": ["node_modules/", "dist", "coverage"],
+    "env": {
+        "browser": true,
+        "es6": true,
+        "node": true,
+        "jest": true
+    },
+    "extends": [
+        // "plugin:react/recommended", // Uses the recommended rules from @eslint-plugin-react
+        "plugin:@typescript-eslint/recommended", // Uses the recommended rules from the @typescript-eslint/eslint-plugin
+        "prettier/@typescript-eslint", // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
+        "plugin:prettier/recommended" // LAST ONE.Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.    "eslint:recommended",
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json",
+        "ecmaFeatures": { "jsx": true },
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "rules": {
+        "block-scoped-var": "error",
+        "camelcase": "warn",
+        "constructor-super": "warn",
+        "default-case": "warn",
+        "no-dupe-args": "warn",
+        "no-dupe-keys": "warn",
+        "no-duplicate-case": "warn",
+        "no-duplicate-imports": "warn",
+        "no-magic-numbers": "error",
+        "no-return-await": "warn",
+        "require-await": "warn",
+        "@typescript-eslint/no-floating-promises": "warn"
+    }
 }
