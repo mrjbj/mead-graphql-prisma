@@ -1,3 +1,6 @@
+/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/camelcase */
+
 // Resolvers
 //  - Query object acts as container for each of the resolvable query elements
 //    assigned to the GraphQL "Query" type (defined in schema.graphql)
@@ -19,80 +22,89 @@ import { getCurrentUser } from '../util/getCurrentUser'
 import { Query } from '../types/graphqlBindings'
 
 const Query: AppQuery = {
-  async users(_parent, args, { prisma }, info) {
-    Assert(prisma instanceof Prisma, `Assert: parameter [prisma] is not an object: [${jStringify(prisma)}]`)
+    users(_parent, args, { prisma }, info) {
+        Assert(
+            prisma instanceof Prisma,
+            `Assert: parameter [prisma] is not an object: [${jStringify(prisma)}]`,
+        )
 
-    const queryArgs: DynamicObject = {
-      first: args!.first,
-      skip: args!.skip,
-      after: args!.after,
-      orderBy: args!.orderBy
-    }
-    // != means both 'null' and 'undefined' resolve to false, so query must contain something that's not null.
-    if (args!.query != null) {
-      queryArgs.where.OR = [{ name_contains: args!.query }]
-    }
-    return prisma.query.users(queryArgs, info) // (1)
-  },
-  async posts(_parent, args, { prisma }, info) {
-    const queryArgs: DynamicObject = {
-      first: args!.first,
-      skip: args!.skip,
-      after: args!.after,
-      orderBy: args!.orderBy,
-      where: { published: true }
-    }
-    if (args!.query != null) {
-      queryArgs.where.OR = [{ title_contains: args!.query }, { body_contains: args!.query }]
-    }
-    return prisma.query.posts(queryArgs, info)
-  },
-  async comments(_parent, args, { prisma }, info) {
-    const queryArgs: DynamicObject = {
-      first: args!.first,
-      skip: args!.skip,
-      after: args!.after,
-      orderBy: args!.orderBy
-    }
-    if (args!.query != null) {
-      queryArgs.where = { text_contains: args!.query }
-    }
-    return prisma.query.comments(queryArgs, info)
-  },
-  // if post is published, then return since access to all,
-  // if post is not published, then return only if current user is author
-  async post(_parent, args, { prisma, request }, info) {
-    const currentUser = getCurrentUser(request, false)
-    const post = await prisma.query.post({ where: { id: args.id } }, info) as Post
-    if (!post) {
-      throw SetVerror(undefined, `Post not found.`)
-    }
-    if (post.published) {
-      return post
-    } else if (currentUser !== post.author.id) {
-      throw SetVerror(undefined, `Please login first.`)
-    } else {
-      return post
-    }
-  },
-  async me(_parent, _args, { prisma, request }, info) {
-    const currentUser = getCurrentUser(request)
-    return await prisma.query.user({ where: { id: currentUser } }, info)
-  },
-  async myPosts(_parent, args, { prisma, request }, info) {
-    const currentUser = getCurrentUser(request)
-    const queryArgs: DynamicObject = {
-      first: args!.first,
-      after: args!.after,
-      skip: args!.skip,
-      orderBy: args!.orderBy,
-      where: { author: { id: currentUser } }
-    }
-    if (args!.query != null) {
-      queryArgs.where.OR = [{ title_contains: args!.query }, { body_contains: args!.query }]
-    }
-    return prisma.query.posts(queryArgs, info)
-  }
+        const queryArgs: DynamicObject = {
+            first: args?.first,
+            skip: args?.skip,
+            after: args?.after,
+            orderBy: args?.orderBy,
+        }
+        // != means both 'null' and 'undefined' resolve to false, so query must contain something that's not null.
+        if (args?.query != null) {
+            queryArgs.where.OR = [{ name_contains: args?.query }]
+        }
+        return prisma.query.users(queryArgs, info) // (1)
+    },
+    posts(_parent, args, { prisma }, info) {
+        const queryArgs: DynamicObject = {
+            first: args?.first,
+            skip: args?.skip,
+            after: args?.after,
+            orderBy: args?.orderBy,
+            where: { published: true },
+        }
+        if (args?.query != null) {
+            queryArgs.where.OR = [
+                { title_contains: args?.query },
+                { body_contains: args?.query },
+            ]
+        }
+        return prisma.query.posts(queryArgs, info)
+    },
+    comments(_parent, args, { prisma }, info) {
+        const queryArgs: DynamicObject = {
+            first: args?.first,
+            skip: args?.skip,
+            after: args?.after,
+            orderBy: args?.orderBy,
+        }
+        if (args?.query != null) {
+            queryArgs.where = { text_contains: args!.query }
+        }
+        return prisma.query.comments(queryArgs, info)
+    },
+    // if post is published, then return since access to all,
+    // if post is not published, then return only if current user is author
+    async post(_parent, args, { prisma, request }, info) {
+        const currentUser = getCurrentUser(request, false)
+        const post = (await prisma.query.post({ where: { id: args.id } }, info)) as Post
+        if (!post) {
+            throw SetVerror(undefined, `Post not found.`)
+        }
+        if (post.published) {
+            return post
+        } else if (currentUser !== post.author.id) {
+            throw SetVerror(undefined, `Please login first.`)
+        } else {
+            return post
+        }
+    },
+    me(_parent, _args, { prisma, request }, info) {
+        const currentUser = getCurrentUser(request)
+        return prisma.query.user({ where: { id: currentUser } }, info)
+    },
+    myPosts(_parent, args, { prisma, request }, info) {
+        const currentUser = getCurrentUser(request)
+        const queryArgs: DynamicObject = {
+            first: args?.first,
+            after: args?.after,
+            skip: args?.skip,
+            orderBy: args?.orderBy,
+            where: { author: { id: currentUser } },
+        }
+        if (args?.query != null) {
+            queryArgs.where.OR = [
+                { title_contains: args?.query },
+                { body_contains: args?.query },
+            ]
+        }
+        return prisma.query.posts(queryArgs, info)
+    },
 }
 
 export { Query as default }
