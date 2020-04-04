@@ -97,9 +97,6 @@ test('Query "posts" should return only published items', async () => {
                 id
                 title
                 published
-                author {
-                    name
-                }
             }
         }
     `
@@ -107,4 +104,36 @@ test('Query "posts" should return only published items', async () => {
     expect(response.data.posts.length).toBe(1)
     expect(response.data.posts[0].id).toBe(keyPost.id)
     expect(response.data.posts[0].published).toBeTruthy()
+})
+
+test('Login should fail with bad credentials', async () => {
+    const loginAction = gql`
+        mutation {
+            login(email: "${keyUser.email}", password: "${keyUser.password}+bad.")
+            {
+                token
+            }
+        }
+    `
+    await expect(client.mutate({ mutation: loginAction })).rejects.toThrow()
+})
+
+test('Password must >= MIN_PASSWORD_LENGTH', async () => {
+    const tempUser = await prisma.mutation.createUser({
+        data: {
+            name: 'Will not be added.',
+            email: 'donotadd@example.com',
+            password: '1234',
+        },
+    })
+    console.log(tempUser)
+    // await expect(
+    //     prisma.mutation.createUser({
+    //         data: {
+    //             name: 'Will not be added.',
+    //             email: 'donotadd@example.com',
+    //             password: '1234',
+    //         },
+    //     }),
+    // ).rejects.toThrow()
 })

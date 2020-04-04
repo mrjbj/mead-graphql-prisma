@@ -5,4 +5,4 @@ tabWidth: 4
 semi: false
 singleQuote: true
 arrowParens: avoid
-printWidth: 90
+printWidth: 100
