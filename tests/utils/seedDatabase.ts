@@ -9,15 +9,15 @@ import bcrypt from 'bcryptjs'
 import { User } from '../../src/types/graphqlBindings'
 import { generateToken } from '../../src/util/generateToken'
 
-type TestObject = {
+type TestObject<T> = {
     input: {
         [key: string]: unknown
     }
-    output: unknown
-    jwt: unknown
+    output?: T
+    jwt?: string
 }
 
-export const keyUser: TestObject = {
+export const keyUser: TestObject<User> = {
     input: {
         name: 'The Dude',
         email: 'dude@example.com',
@@ -38,8 +38,7 @@ export const seedDatabase = async (): Promise<void> => {
     await prisma.mutation.deleteManyUsers()
     // insert keyUser & it's authentication token
     keyUser.output = (await prisma.mutation.createUser({ data: keyUser.input })) as User
-    keyUser.jwt = generateToken((keyUser.output as User).id)
-    console.log(keyUser.output.prototype)
+    keyUser.jwt = generateToken(keyUser.output.id)
 
     // keyPost (draft)
     await prisma.mutation.createPost({

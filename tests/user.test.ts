@@ -67,3 +67,22 @@ test('Password must >= MIN_PASSWORD_LENGTH', async () => {
     // populate database
     await expect(client.mutate({ mutation: createUser })).rejects.toThrow()
 })
+
+test('Should return profile for logged-in user', async () => {
+    const client = getClient(keyUser.jwt)
+    const getProfile = gql`
+        query {
+            me {
+                id
+                name
+                email
+            }
+        }
+    `
+    const { data } = await client.query({ query: getProfile })
+    if (keyUser.output) {
+        expect(data.me.id).toBe(keyUser.output.id)
+        expect(data.me.name).toBe(keyUser.output.name)
+        expect(data.me.email).toBe(keyUser.output.email)
+    }
+})
