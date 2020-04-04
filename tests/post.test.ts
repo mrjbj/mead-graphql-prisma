@@ -44,8 +44,6 @@ test('Should return all posts for logged-in user (including draft)', async () =>
     expect(data.myPosts.length).toBe(2) // two test cases
     expect(data.myPosts[0].published).toBeFalsy()
     expect(data.myPosts[1].published).toBeTruthy()
-    if (keyUser.output) {
-        expect(data.myPosts[0].author.id).toEqual(keyUser.output.id)
-        expect(data.myPosts[1].author.id).toEqual(keyUser.output.id)
-    }
+    expect(data.myPosts[0].author.id).toEqual(keyUser.output?.id)
+    expect(data.myPosts[1].author.id).toEqual(keyUser.output?.id)
 })
