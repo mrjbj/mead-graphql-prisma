@@ -6,12 +6,25 @@
 
 import { prisma } from '../../src/prisma'
 import bcrypt from 'bcryptjs'
+import { User } from '../../src/types/graphqlBindings'
+import { generateToken } from '../../src/util/generateToken'
 
-export const keyUser = {
-    id: '',
-    name: 'The Dude',
-    email: 'dude@example.com',
-    password: 'GooberPatrol',
+type TestObject = {
+    input: {
+        [key: string]: unknown
+    }
+    output: unknown
+    jwt: unknown
+}
+
+export const keyUser: TestObject = {
+    input: {
+        name: 'The Dude',
+        email: 'dude@example.com',
+        password: bcrypt.hashSync('GooberPatrol'),
+    },
+    output: undefined,
+    jwt: undefined,
 }
 export const keyPost = {
     id: '',
@@ -19,18 +32,14 @@ export const keyPost = {
 }
 
 export const seedDatabase = async (): Promise<void> => {
+    // delete test data
     await prisma.mutation.deleteManyComments()
     await prisma.mutation.deleteManyPosts()
     await prisma.mutation.deleteManyUsers()
-    // keyUser
-    const newUser = await prisma.mutation.createUser({
-        data: {
-            name: keyUser.name,
-            email: keyUser.email,
-            password: bcrypt.hashSync(keyUser.password),
-        },
-    })
-    keyUser.id = newUser.id // update id
+    // insert keyUser & it's authentication token
+    keyUser.output = (await prisma.mutation.createUser({ data: keyUser.input })) as User
+    keyUser.jwt = generateToken((keyUser.output as User).id)
+    console.log(keyUser.output.prototype)
 
     // keyPost (draft)
     await prisma.mutation.createPost({
@@ -38,7 +47,7 @@ export const seedDatabase = async (): Promise<void> => {
             title: 'Test Post (* DRAFT *)',
             body: 'this is a test post, created with published set to false',
             published: false,
-            author: { connect: { email: keyUser.email } },
+            author: { connect: { email: keyUser.input.email } },
         },
     })
     // keyPost (published)
@@ -47,7 +56,7 @@ export const seedDatabase = async (): Promise<void> => {
             title: keyPost.title,
             body: 'this is a test post, created with published status',
             published: true,
-            author: { connect: { email: keyUser.email } },
+            author: { connect: { email: keyUser.input.email } },
         },
     })
     keyPost.id = newPost.id

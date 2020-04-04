@@ -38,14 +38,14 @@ test('Return public author profiles (e.g. no email)', async () => {
     `
     const response = await client.query({ query: getUsers })
     expect(response.data.users.length).toBe(1)
-    expect(response.data.users[0].name).toBe(keyUser.name)
+    expect(response.data.users[0].name).toBe(keyUser.input.name)
     expect(response.data.users[0].email).toBe(null)
 })
 
 test('Login should fail with bad credentials', async () => {
     const loginAction = gql`
         mutation {
-            login(email: "${keyUser.email}", password: "${keyUser.password}+bad.")
+            login(email: "${keyUser.input.email}", password: "${keyUser.input.password}+bad.")
             {
                 token
             }
