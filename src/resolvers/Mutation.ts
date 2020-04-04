@@ -78,15 +78,10 @@ const Mutation: AppMutation = {
         console.log(`args.data.password: [${args.data.password}]`)
         console.log(`MIN_PASSWORD_LENGTH: [${MIN_PASSWORD_LENGTH}]`)
         if (args.data.password) {
-            if (args.data.password.length < MIN_PASSWORD_LENGTH) {
-                throw SetVerror(
-                    undefined,
-                    `Password must be at least [${MIN_PASSWORD_LENGTH}] characters.`,
-                )
-            }
-            const password = hashPassword(args.data.password)
+            const hashedPassword = hashPassword(args.data.password)
+            console.log(hashedPassword)
             const newUser: User = await prisma.mutation.createUser({
-                data: { ...args.data, password },
+                data: { ...args.data, password: hashedPassword },
             }) // (1), (3)
             return {
                 user: newUser,

@@ -119,21 +119,19 @@ test('Login should fail with bad credentials', async () => {
 })
 
 test('Password must >= MIN_PASSWORD_LENGTH', async () => {
-    const tempUser = await prisma.mutation.createUser({
-        data: {
-            name: 'Will not be added.',
-            email: 'donotadd@example.com',
-            password: '1234',
-        },
-    })
-    console.log(tempUser)
-    // await expect(
-    //     prisma.mutation.createUser({
-    //         data: {
-    //             name: 'Will not be added.',
-    //             email: 'donotadd@example.com',
-    //             password: '1234',
-    //         },
-    //     }),
-    // ).rejects.toThrow()
+    const createUser = gql`
+        mutation {
+            createUser(
+                data: {
+                    name: "password-too-short"
+                    email: "do-not-add-me@example.com"
+                    password: "1234"
+                }
+            ) {
+                token
+            }
+        }
+    `
+    // populate database
+    await expect(client.mutate({ mutation: createUser })).rejects.toThrow()
 })
