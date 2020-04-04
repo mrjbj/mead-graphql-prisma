@@ -14,10 +14,7 @@ export type AppToken = {
 // the mutation will, in turn, bubble up the error to gql server, which will report it back
 //
 // if authRequired is false, then don't throw error so caller can continue on if desired.
-export const getCurrentUser = (
-    request: ContextParameters,
-    authRequired = true,
-): string | null => {
+export const getCurrentUser = (request: ContextParameters, authRequired = true): string | null => {
     // subscriptions have authorization token stored on connection.context
     const header = request.request
         ? request.request.headers.authorization
@@ -41,6 +38,8 @@ export const getCurrentUser = (
         }
     }
 
-    console.log(`Authorized user: [${returner}]`)
+    if (process.env.RUN_MODE != 'TEST') {
+        console.log(`Authorized user: [${returner}]`)
+    }
     return returner
 }

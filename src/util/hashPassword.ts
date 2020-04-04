@@ -7,10 +7,7 @@ export const hashPassword = (password: string): string => {
         throw SetVerror(undefined, `password is required.`)
     } else {
         if (password.length < MIN_PASSWORD_LENGTH) {
-            throw SetVerror(
-                undefined,
-                `Password length must be [${MIN_PASSWORD_LENGTH}] characters or more.`,
-            )
+            throw SetVerror(undefined, `Password length must be [${MIN_PASSWORD_LENGTH}] characters or more.`)
         }
     }
     return bcrypt.hashSync(password, PASSWORD_SALT_LENGTH)

@@ -15,7 +15,6 @@ import bcrypt from 'bcryptjs'
 import { getCurrentUser } from '../util/getCurrentUser'
 import { generateToken } from '../util/generateToken'
 import { hashPassword } from '../util/hashPassword'
-import { MIN_PASSWORD_LENGTH } from '../util/constants'
 
 const Mutation: AppMutation = {
     // 1. hash and save new password in database // (1)
@@ -30,11 +29,7 @@ const Mutation: AppMutation = {
     //      directly returned by its resolver function (AppMutation.createUser()), which do include token and user  // (3)
     async login(_parent, args, { prisma }, _info) {
         Assert(prisma instanceof Prisma, `Assert: [prisma] not instance of Prisma [${prisma}]`)
-        Assert.strictEqual(
-            typeof args.email,
-            'string',
-            `Assert: [args.email] not a string. [${args.email}]`,
-        )
+        Assert.strictEqual(typeof args.email, 'string', `Assert: [args.email] not a string. [${args.email}]`)
         Assert.strictEqual(
             typeof args.password,
             'string',
@@ -75,11 +70,8 @@ const Mutation: AppMutation = {
             'string',
             `Assert: [args.data.name] not a string. [${args.data.name}]`,
         )
-        console.log(`args.data.password: [${args.data.password}]`)
-        console.log(`MIN_PASSWORD_LENGTH: [${MIN_PASSWORD_LENGTH}]`)
         if (args.data.password) {
             const hashedPassword = hashPassword(args.data.password)
-            console.log(hashedPassword)
             const newUser: User = await prisma.mutation.createUser({
                 data: { ...args.data, password: hashedPassword },
             }) // (1), (3)
@@ -126,11 +118,7 @@ const Mutation: AppMutation = {
         )
     },
     async deletePost(_parent, args, { prisma, request }, info) {
-        Assert.strictEqual(
-            typeof args.id,
-            'string',
-            `AssertionError: [args.id] not a string. [${args.id}]`,
-        )
+        Assert.strictEqual(typeof args.id, 'string', `AssertionError: [args.id] not a string. [${args.id}]`)
         const authenticatedUserId = getCurrentUser(request)
         const postOwnedByAuthenticatedUser = await prisma.exists.Post({
             id: args.id,
@@ -144,11 +132,7 @@ const Mutation: AppMutation = {
     // must be authenticated and author of post to be updated.
     // if post is going from published to unpublished, then delete any associated comments.
     async updatePost(_parent, args, { prisma, request }, info) {
-        Assert.strictEqual(
-            typeof args.id,
-            'string',
-            `AssertionError: [args.id] not a string. [${args.id}]`,
-        )
+        Assert.strictEqual(typeof args.id, 'string', `AssertionError: [args.id] not a string. [${args.id}]`)
         const currentUserId = getCurrentUser(request)
         const isPublished = await prisma.exists.Post({ id: args.id, published: true })
         const postOwnedByCurrentUser = await prisma.exists.Post({

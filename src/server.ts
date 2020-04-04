@@ -25,6 +25,7 @@ import { GraphQLServer, PubSub } from 'graphql-yoga'
 import { db } from './db'
 import { resolvers } from './resolvers/index'
 import { prisma } from './prisma'
+import { Context } from './types/types'
 
 const pubsub = new PubSub()
 
@@ -32,14 +33,15 @@ const pubsub = new PubSub()
 // yoga will call the context function on each request, passing
 // in the request object provided by nodejs from the client // (2)
 export const server = new GraphQLServer({
-  typeDefs: './src/schema.graphql',   // (1)
-  resolvers,
-  context(request) {                  // (2)
-    return {
-      db,
-      pubsub,
-      prisma,
-      request
-    }                                  // (6)
-  }
+    typeDefs: './src/schema.graphql', // (1)
+    resolvers,
+    context(request): Context {
+        // (2)
+        return {
+            db,
+            pubsub,
+            prisma,
+            request,
+        } // (6)
+    },
 })
