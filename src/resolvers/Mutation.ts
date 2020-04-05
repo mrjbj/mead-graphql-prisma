@@ -144,10 +144,9 @@ const Mutation: AppMutation = {
         }
         if (isPublished && !args.data.published) {
             // is owned by current user and going from published to unpublished.
-            const countDeleted = await prisma.mutation.deleteManyComments({
+            await prisma.mutation.deleteManyComments({
                 where: { post: { id: args.id } },
             })
-            console.log(`Comments deleted from unpublishing: [${countDeleted}]`)
         }
         return prisma.mutation.updatePost(
             {

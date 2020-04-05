@@ -6,7 +6,7 @@
 
 import { prisma } from '../../src/prisma'
 import bcrypt from 'bcryptjs'
-import { User } from '../../src/types/graphqlBindings'
+import { User, Post } from '../../src/types/graphqlBindings'
 import { generateToken } from '../../src/util/generateToken'
 
 type TestObject<T> = {
@@ -26,9 +26,25 @@ export const keyUser: TestObject<User> = {
     output: undefined,
     jwt: undefined,
 }
-export const keyPost = {
-    id: '',
-    title: 'Test Post (Published)',
+export const keyPost: TestObject<Post> = {
+    input: {
+        title: 'Test Post 1 (Published)',
+        body: 'this is a test post, created with published status',
+        published: true,
+        author: { connect: { email: keyUser.input.email } },
+    },
+    output: undefined,
+    jwt: undefined,
+}
+export const keyPost2: TestObject<Post> = {
+    input: {
+        title: 'Test Post 2 (* Draft *)',
+        body: 'this is a test post, created with published status set to FALSE',
+        published: false,
+        author: { connect: { email: keyUser.input.email } },
+    },
+    output: undefined,
+    jwt: undefined,
 }
 
 export const seedDatabase = async (): Promise<void> => {
@@ -36,27 +52,13 @@ export const seedDatabase = async (): Promise<void> => {
     await prisma.mutation.deleteManyComments()
     await prisma.mutation.deleteManyPosts()
     await prisma.mutation.deleteManyUsers()
-    // insert keyUser & it's authentication token
+
+    // insert keyUser, keyUser's authorization token
     keyUser.output = (await prisma.mutation.createUser({ data: keyUser.input })) as User
     keyUser.jwt = generateToken(keyUser.output.id)
 
-    // keyPost (draft)
-    await prisma.mutation.createPost({
-        data: {
-            title: 'Test Post (* DRAFT *)',
-            body: 'this is a test post, created with published set to false',
-            published: false,
-            author: { connect: { email: keyUser.input.email } },
-        },
-    })
-    // keyPost (published)
-    const newPost = await prisma.mutation.createPost({
-        data: {
-            title: keyPost.title,
-            body: 'this is a test post, created with published status',
-            published: true,
-            author: { connect: { email: keyUser.input.email } },
-        },
-    })
-    keyPost.id = newPost.id
+    // insert keyPost (published)
+    keyPost.output = await prisma.mutation.createPost({ data: keyPost.input })
+    // insert keyPost (draft)
+    keyPost2.output = await prisma.mutation.createPost({ data: keyPost2.input })
 }
