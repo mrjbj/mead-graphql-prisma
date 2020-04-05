@@ -6,7 +6,7 @@
 
 import { prisma } from '../../src/prisma'
 import bcrypt from 'bcryptjs'
-import { User, Post } from '../../src/types/graphqlBindings'
+import { User, Post, Comment } from '../../src/types/graphqlBindings'
 import { generateToken } from '../../src/util/generateToken'
 
 type TestObject<T> = {
