@@ -3,7 +3,7 @@ import 'cross-fetch/polyfill'
 import { prisma } from '../src/prisma'
 import { seedDatabase, keyUser } from './utils/seedDatabase'
 import { getClient } from './utils/getClient'
-import { getProfile, createUser, getUsers, loginUser } from './utils/operations'
+import { getProfile, createUser, getUsers, loginUser } from './utils/userOperations'
 
 const client = getClient() // up to us to invoke getClient on our own (hence ())
 beforeEach(seedDatabase) // beforeEach has code to invoke function we pass it
