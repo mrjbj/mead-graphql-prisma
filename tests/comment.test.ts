@@ -2,7 +2,7 @@
 import 'cross-fetch/polyfill'
 import { seedDatabase, postOne, userOne, userTwo, commentOne, commentTwo } from './utils/seedDatabase'
 import { getClient } from './utils/getClient'
-// import { prisma } from '../src/prisma'
+import { prisma } from '../src/prisma'
 import {
     getAllComments,
     createNewComment,
@@ -53,6 +53,8 @@ test('Delete comment by id', async () => {
         mutation: deleteCommentById,
         variables,
     })
+    const exists = await prisma.exists.Comment({ id: commentOne.output?.id })
+    expect(exists).not.toBeTruthy()
     expect(data.deleteComment.id).toBe(commentOne.output?.id)
     expect(data.deleteComment.author.id).toBe(userOne.output?.id)
 })

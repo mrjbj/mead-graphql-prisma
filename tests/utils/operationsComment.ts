@@ -62,22 +62,6 @@ export const updateCommentById = gql`
         updateComment(id: $id, data: $data) {
             id
             text
-            post {
-                id
-                title
-                body
-                published
-                author {
-                    id
-                    name
-                    email
-                }
-            }
-            author {
-                id
-                name
-                email
-            }
         }
     }
 `
@@ -87,21 +71,8 @@ export const deleteCommentById = gql`
         deleteComment(id: $id) {
             id
             text
-            post {
-                id
-                title
-                body
-                published
-                author {
-                    id
-                    name
-                    email
-                }
-            }
             author {
                 id
-                name
-                email
             }
         }
     }
