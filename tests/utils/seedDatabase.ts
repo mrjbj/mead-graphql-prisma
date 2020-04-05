@@ -16,8 +16,7 @@ type TestObject<T> = {
     output?: T
     jwt?: string
 }
-
-export const keyUser: TestObject<User> = {
+export const userOne: TestObject<User> = {
     input: {
         name: 'The Dude',
         email: 'dude@example.com',
@@ -26,22 +25,45 @@ export const keyUser: TestObject<User> = {
     output: undefined,
     jwt: undefined,
 }
-export const keyPost: TestObject<Post> = {
+export const userTwo: TestObject<User> = {
     input: {
-        title: 'Test Post 1 (Published)',
-        body: 'this is a test post, created with published status',
-        published: true,
-        author: { connect: { email: keyUser.input.email } },
+        name: 'The Secondary',
+        email: 'secondary@example.com',
+        password: bcrypt.hashSync('GooberPatrol'),
     },
     output: undefined,
     jwt: undefined,
 }
-export const keyPost2: TestObject<Post> = {
+export const postOne: TestObject<Post> = {
+    input: {
+        title: 'Test Post 1 (Published)',
+        body: 'this is a test post, created with published status',
+        published: true,
+        author: { connect: { email: userOne.input.email } },
+    },
+    output: undefined,
+    jwt: undefined,
+}
+export const PostTwo: TestObject<Post> = {
     input: {
         title: 'Test Post 2 (* Draft *)',
         body: 'this is a test post, created with published status set to FALSE',
         published: false,
-        author: { connect: { email: keyUser.input.email } },
+        author: { connect: { email: userOne.input.email } },
+    },
+    output: undefined,
+    jwt: undefined,
+}
+export const commentOne: TestObject<Comment> = {
+    input: {
+        text: 'This is comment on my own post.  Boy am I awesome!',
+    },
+    output: undefined,
+    jwt: undefined,
+}
+export const commentTwo: TestObject<Comment> = {
+    input: {
+        text: "This is comment from an admirer.  They think I'm awesome too!",
     },
     output: undefined,
     jwt: undefined,
@@ -50,15 +72,35 @@ export const keyPost2: TestObject<Post> = {
 export const seedDatabase = async (): Promise<void> => {
     // delete test data
     await prisma.mutation.deleteManyComments()
+    await prisma.mutation.deleteManyComments()
     await prisma.mutation.deleteManyPosts()
     await prisma.mutation.deleteManyUsers()
 
-    // insert keyUser, keyUser's authorization token
-    keyUser.output = (await prisma.mutation.createUser({ data: keyUser.input })) as User
-    keyUser.jwt = generateToken(keyUser.output.id)
+    // insert two users, with authorization tokens for each
+    userOne.output = (await prisma.mutation.createUser({ data: userOne.input })) as User
+    userOne.jwt = generateToken(userOne.output.id)
+
+    userTwo.output = (await prisma.mutation.createUser({ data: userTwo.input })) as User
+    userTwo.jwt = generateToken(userTwo.output.id)
 
     // insert keyPost (published)
-    keyPost.output = await prisma.mutation.createPost({ data: keyPost.input })
+    postOne.output = await prisma.mutation.createPost({ data: postOne.input })
     // insert keyPost (draft)
-    keyPost2.output = await prisma.mutation.createPost({ data: keyPost2.input })
+    PostTwo.output = await prisma.mutation.createPost({ data: PostTwo.input })
+
+    // keyPost - add one comment from each user
+    commentOne.output = await prisma.mutation.createComment({
+        data: {
+            ...commentOne.input,
+            post: { connect: { id: postOne.output?.id } },
+            author: { connect: { email: userOne.output.email } },
+        },
+    })
+    commentTwo.output = await prisma.mutation.createComment({
+        data: {
+            ...commentTwo.input,
+            post: { connect: { id: postOne.output?.id } },
+            author: { connect: { email: userTwo.output.email } },
+        },
+    })
 }

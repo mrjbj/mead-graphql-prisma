@@ -1,6 +1,6 @@
 /* eslint no-magic-numbers: 0 */
 import 'cross-fetch/polyfill'
-import { seedDatabase, keyPost, keyUser, keyPost2 } from './utils/seedDatabase'
+import { seedDatabase, postOne, userOne, PostTwo } from './utils/seedDatabase'
 import { getClient } from './utils/getClient'
 import { prisma } from '../src/prisma'
 import {
@@ -9,7 +9,7 @@ import {
     updateExistingPost,
     createNewPost,
     deletePostById,
-} from './utils/postOperations'
+} from './utils/operationsPost'
 
 const client = getClient()
 beforeEach(seedDatabase)
@@ -18,25 +18,25 @@ test('Query "posts" should return only published items', async () => {
     const response = await client.query({ query: getAllPosts })
 
     expect(response.data.posts.length).toBe(1)
-    expect(response.data.posts[0].id).toBe(keyPost.output?.id)
+    expect(response.data.posts[0].id).toBe(postOne.output?.id)
     expect(response.data.posts[0].published).toBeTruthy()
 })
 
 test('Should return all posts for logged-in user (including draft)', async () => {
-    const client = getClient(keyUser.jwt)
+    const client = getClient(userOne.jwt)
     const { data } = await client.query({ query: getMyPosts })
 
     expect(data.myPosts.length).toBe(2) // two test cases
     expect(data.myPosts[1].published).toBeFalsy()
     expect(data.myPosts[0].published).toBeTruthy()
-    expect(data.myPosts[0].author.id).toEqual(keyUser.output?.id)
-    expect(data.myPosts[1].author.id).toEqual(keyUser.output?.id)
+    expect(data.myPosts[0].author.id).toEqual(userOne.output?.id)
+    expect(data.myPosts[1].author.id).toEqual(userOne.output?.id)
 })
 
 test('User can update their own posts', async () => {
-    const client = getClient(keyUser.jwt)
+    const client = getClient(userOne.jwt)
     const variables = {
-        id: keyPost.output?.id,
+        id: postOne.output?.id,
         data: { published: false },
     }
     const { data } = await client.mutate({ mutation: updateExistingPost, variables })
@@ -44,7 +44,7 @@ test('User can update their own posts', async () => {
 })
 
 test('Logged in users can create new posts', async () => {
-    const client = getClient(keyUser.jwt)
+    const client = getClient(userOne.jwt)
     const variables = {
         data: {
             title: 'Temp Post',
@@ -64,11 +64,11 @@ test('Logged in users can create new posts', async () => {
     expect(exists).toBeTruthy()
 })
 test('DeletePost removes by id', async () => {
-    const client = getClient(keyUser.jwt)
-    const variables = { id: keyPost2.output?.id }
+    const client = getClient(userOne.jwt)
+    const variables = { id: PostTwo.output?.id }
 
     await client.mutate({ mutation: deletePostById, variables })
-    const exists = await prisma.exists.Post({ id: keyPost2.output?.id })
+    const exists = await prisma.exists.Post({ id: PostTwo.output?.id })
     // shouldn't be in database any longer
     expect(exists).toBe(false)
 })
