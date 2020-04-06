@@ -10,10 +10,13 @@ import { onError } from 'apollo-link-error'
 import { ApolloLink, Observable, Operation } from 'apollo-link'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
+import WebSocket from 'ws'
 
 export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => {
     const httpURL = 'http://localhost:4000'
     const websocketURL = 'ws://localhost:4000'
+
     // Setup the authorization header for the http client
     const request = (operation: Operation): void => {
         if (jwt) {
@@ -56,7 +59,7 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
             if (graphQLErrors) {
                 graphQLErrors.map(({ message, locations, path }) =>
                     console.log(
-                        `[JBJ GraphQL over WS error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+                        `[GraphQL over WS error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
                     ),
                 )
             }
@@ -66,19 +69,22 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
             }
         }),
         requestLink,
-        new WebSocketLink({
-            uri: websocketURL,
-            options: {
-                reconnect: true,
-                connectionParams: (): void | Record<string, string> => {
-                    if (jwt) {
-                        return {
-                            Authorization: `Bearer ${jwt}`,
+        new WebSocketLink(
+            new SubscriptionClient(
+                websocketURL,
+                {
+                    reconnect: true,
+                    connectionParams: (): void | Record<string, string> => {
+                        if (jwt) {
+                            return {
+                                Authorization: `Bearer ${jwt}`,
+                            }
                         }
-                    }
+                    },
                 },
-            },
-        }),
+                WebSocket,
+            ),
+        ),
     ])
 
     // HTTP link for queries and mutations
