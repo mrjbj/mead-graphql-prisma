@@ -1,8 +1,8 @@
 /* eslint no-magic-numbers: 0 */
 import 'cross-fetch/polyfill'
 import { seedDatabase, postOne, userOne, PostTwo } from './utils/seedDatabase'
-import { getClient } from './utils/getClient'
 import { prisma } from '../src/prisma'
+import { getClient } from './utils/getClient'
 import {
     getAllPosts,
     getMyPosts,
