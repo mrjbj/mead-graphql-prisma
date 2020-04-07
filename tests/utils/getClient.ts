@@ -32,6 +32,10 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
     }
 
     // Setup the request handlers for the http clients
+    // request handler that accepts gql operation and next apolloLink
+    // returns new Observable with behavior defined by subscriber function.
+    // subscriber function is called every time Observable.subscribe() is called by client.
+    // the client passes in the "observer object (containing next(), error(), complete())
     const requestLink = new ApolloLink((operation, forward) => {
         return new Observable(observer => {
             let handle: any
@@ -47,7 +51,7 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
                     })
                 })
                 .catch(observer.error.bind(observer))
-
+            // cleanup function called when subscription is closed
             return (): any => {
                 if (handle) {
                     handle.unsubscribe()

@@ -9,7 +9,7 @@ import {
     deleteCommentById,
     subscribeToCommentsOnPost,
 } from './utils/operationsComment'
-//
+
 beforeEach(seedDatabase)
 
 test('Create new comment', async () => {

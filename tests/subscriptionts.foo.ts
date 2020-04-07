@@ -18,6 +18,12 @@ test('Subscribe to comments on post', async done => {
             query: subscribeToCommentsOnPost,
             variables,
         })
+        // call the subscribe function, passing in an "observer object."
+        // observer object contains
+        //    - "next()", which sends next value in sequence,
+        //   -  "error()", which terminates sequence with error
+        //   -  "complete()", which terminates the sequence with success
+        //   -  "closed" is supposed to be a boolen = true when subscription closed.
         .subscribe({
             next(response) {
                 expect(response.data.comment.mutation).toBe('UPDATED')
