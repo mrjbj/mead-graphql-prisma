@@ -5,6 +5,7 @@ import { prisma } from '../src/prisma'
 import { getClient } from './utils/getClient'
 import { getMyPosts, updateExistingPost, createNewPost, deletePostById } from './utils/operationsPost'
 
+// fjfjffjjk
 beforeEach(seedDatabase)
 
 test('Should return all posts for logged-in user (including draft)', async () => {
