@@ -8,6 +8,7 @@ import {
     createNewComment,
     updateCommentById,
     deleteCommentById,
+    subscribeToCommentsOnPost,
 } from './utils/operationsComment'
 
 const client = getClient()
@@ -68,4 +69,33 @@ test('Cannot delete comment made by another user', async () => {
             variables,
         }),
     ).rejects.toThrow()
+})
+
+//  - subscribe is callback function that gets called whenever server side needs to notify
+//    next receives the notification
+//  - use done handle to signal to jest to hang around until done is called
+test('Subscribe to comments on post', async done => {
+    const client = getClient(userOne.jwt)
+    const variables = { postId: postOne.output?.id }
+    client
+        .subscribe({
+            query: subscribeToCommentsOnPost,
+            variables,
+        })
+        .subscribe({
+            next(response) {
+                expect(response.data.comment.mutation).toBe('UPDATED')
+                done()
+            },
+        })
+    // Create/Change/Delete a comment to trigger the subscribe callback.
+    const newText = 'this update to comment should trigger subscription.'
+    const variables2 = {
+        id: commentOne.output?.id,
+        data: { text: newText },
+    }
+    await client.mutate({
+        mutation: updateCommentById,
+        variables: variables2,
+    })
 })

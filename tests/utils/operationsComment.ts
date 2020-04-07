@@ -77,3 +77,19 @@ export const deleteCommentById = gql`
         }
     }
 `
+// template - subscribe to comments on post
+export const subscribeToCommentsOnPost = gql`
+    subscription($postId: ID!) {
+        comment(postId: $postId) {
+            mutation
+            node {
+                id
+                text
+                post {
+                    id
+                    title
+                }
+            }
+        }
+    }
+`

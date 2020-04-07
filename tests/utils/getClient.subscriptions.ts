@@ -2,7 +2,7 @@
 // npm install apollo-client@2.4.2 apollo-cache-inmemory@1.2.10 apollo-link-http@1.5.5 apollo-link-error@1.1.1 apollo-link@1.2.3 apollo-link-ws@1.0.9 apollo-utilities@1.0.21 subscriptions-transport-ws@0.9.15 @babel/polyfill@7.0.0 graphql@0.13.2
 // npm install apollo-client apollo-cache-inmemory apollo-link-http apollo-link-error apollo-link apollo-link-ws apollo-utilities subscriptions-transport-ws graphql
 
-import * as fetch from 'node-fetch'
+// import '@babel/polyfill/noConflict'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
@@ -13,9 +13,6 @@ import { getMainDefinition } from 'apollo-utilities'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import WebSocket from 'ws'
 
-// Configure the ApolloClient for either Http or WebSocket, depending upon operation.
-// 1. request() -> puts Authorization header into context of the Apollo GQL operation.
-// 2. requestLink ->
 export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => {
     const httpURL = 'http://localhost:4000'
     const websocketURL = 'ws://localhost:4000'
@@ -48,7 +45,7 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
                 })
                 .catch(observer.error.bind(observer))
 
-            return (): any => {
+            return (): void => {
                 if (handle) {
                     handle.unsubscribe()
                 }
@@ -77,8 +74,6 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
                 websocketURL,
                 {
                     reconnect: true,
-                    inactivityTimeout: 100,
-                    timeout: 1000,
                     connectionParams: (): void | Record<string, string> => {
                         if (jwt) {
                             return {
@@ -110,8 +105,7 @@ export const getClient = (jwt?: string): ApolloClient<NormalizedCacheObject> => 
         new HttpLink({
             uri: httpURL,
             credentials: 'same-origin',
-            fetch,
-        } as any),
+        }),
     ])
 
     // Link to direct ws and http traffic to the correct place
