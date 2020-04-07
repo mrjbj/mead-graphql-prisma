@@ -3,24 +3,9 @@ import 'cross-fetch/polyfill'
 import { seedDatabase, postOne, userOne, PostTwo } from './utils/seedDatabase'
 import { prisma } from '../src/prisma'
 import { getClient } from './utils/getClient'
-import {
-    getAllPosts,
-    getMyPosts,
-    updateExistingPost,
-    createNewPost,
-    deletePostById,
-} from './utils/operationsPost'
+import { getMyPosts, updateExistingPost, createNewPost, deletePostById } from './utils/operationsPost'
 
-const client = getClient()
 beforeEach(seedDatabase)
-
-test('Query "posts" should return only published items', async () => {
-    const response = await client.query({ query: getAllPosts })
-
-    expect(response.data.posts.length).toBe(1)
-    expect(response.data.posts[0].id).toBe(postOne.output?.id)
-    expect(response.data.posts[0].published).toBeTruthy()
-})
 
 test('Should return all posts for logged-in user (including draft)', async () => {
     const client = getClient(userOne.jwt)

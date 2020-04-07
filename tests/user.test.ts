@@ -1,14 +1,16 @@
 /* eslint no-magic-numbers: 0 */
 import 'cross-fetch/polyfill'
 import { prisma } from '../src/prisma'
-import { seedDatabase, userOne } from './utils/seedDatabase'
+import { seedDatabase, userOne, postOne, userTwo } from './utils/seedDatabase'
 import { getClient } from './utils/getClient'
 import { getProfile, createUser, getUsers, loginUser } from './utils/operationsUser'
+import { getAllComments } from './utils/operationsComment'
+import { getAllPosts } from './utils/operationsPost'
 
-const client = getClient() // up to us to invoke getClient on our own (hence ())
 beforeEach(seedDatabase) // beforeEach has code to invoke function we pass it
 
 test('Create new user', async () => {
+    const client = getClient() // no authentication
     // template variable
     const variables = {
         data: {
@@ -27,6 +29,7 @@ test('Create new user', async () => {
 })
 
 test('Get users without authentication (email is null)', async () => {
+    const client = getClient() // no authentication
     const response = await client.query({ query: getUsers })
     expect(response.data.users.length).toBe(2)
     expect(response.data.users[0].name).toBe(userOne.input.name)
@@ -34,6 +37,7 @@ test('Get users without authentication (email is null)', async () => {
 })
 
 test('Login fail (bad credentials)', async () => {
+    const client = getClient() // no authentication
     const variables = {
         email: userOne.output?.email,
         password: '2short',
@@ -42,6 +46,7 @@ test('Login fail (bad credentials)', async () => {
 })
 
 test('Password not >= MIN_PASSWORD_LENGTH', async () => {
+    const client = getClient() // no authentication
     const variables = {
         data: {
             name: 'password-too-short',
@@ -64,4 +69,24 @@ test('Get profile for authenticated user (email not null)', async () => {
     expect(data.me.name).toBe(userOne.output?.name)
     expect(data.me.email).toBe(userOne.output?.email)
     expect(data.me.email).not.toBe(null)
+})
+// all tests that require no authentication
+
+test('Return all comments', async () => {
+    const client = getClient() // no authentication
+    const { data } = await client.query({ query: getAllComments })
+    expect(data.comments.length).toBe(2)
+    expect(data.comments[0].post.id).toBe(postOne.output?.id)
+    expect(data.comments[1].post.id).toBe(postOne.output?.id)
+    expect(data.comments[0].author.id).toBe(userOne.output?.id)
+    expect(data.comments[1].author.id).toBe(userTwo.output?.id)
+})
+
+test('Query "posts" should return only published items', async () => {
+    const client = getClient() // no authentication
+    const response = await client.query({ query: getAllPosts })
+
+    expect(response.data.posts.length).toBe(1)
+    expect(response.data.posts[0].id).toBe(postOne.output?.id)
+    expect(response.data.posts[0].published).toBeTruthy()
 })
